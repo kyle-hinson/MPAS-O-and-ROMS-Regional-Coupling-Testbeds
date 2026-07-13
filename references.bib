@@ -1,0 +1,497 @@
+%
+% JOURNAL ABBREVIATIONS
+%
+@STRING{AMS 	= "Amer.\ Meteor.\ Soc."}
+@STRING{AGU 	= "Amer.\ Geophys.\ Union"}
+@STRING{AIP 	= "Amer. Inst. Phys."}
+@STRING{ADGEO     = "Adv.\ Geosci."}
+@STRING{AFM       = "Agric.\ For.\ Meteor."}
+@STRING{AM        = "Ann.\ Meteor."}
+@STRING{AN        = "Astrophys.\ Norv."}		% Astrophysica Norvegica
+@STRING{AO        = "Atmos.--Ocean"}			% Atmosphere--Ocean, published by Canadian Meteorological Society (CMOS)
+@STRING{AR        = "Atmos.\ Res."}			% Atmospheric Research
+@STRING{ARFM      = "Annu.\ Rev.\ Fluid Mech."}
+@STRING{AUMET     = "Aust.\ Meteor.\ Mag."}
+@STRING{BAMS      = "Bull.\ Amer.\ Meteor.\ Soc."}
+@STRING{CAP       = "Contrib.\ Atmos.\ Phys."}
+@STRING{CC        = "Climate Change"}      % Climate Change 
+@STRING{CCH       = "Climatic Change"}			% Climatic Change
+@STRING{CDYN      = "Climate Dyn."}
+@STRING{CHAOS     = "Chaos"}
+@STRING{COL       = "Collier's"}
+@STRING{CRS       = "Cont.\ Shelf Res."}
+@STRING{DAO       = "Dyn.\ Atmos.\ Oceans"}
+@STRING{ECO       = "Ecology"}
+@STRING{EI        = "Earth Interact."}
+@STRING{GA        = "Geophysica"}			% Geophysica, published by Geophysical Society of Finland 
+@STRING{GEOMAG    = "Geophys.\ Mag."}
+@STRING{GN        = "Geophys.\ Norv."}			% Geophysica Norvegica
+@STRING{GRL       = "Geophys.\ Res.\ Lett."}
+@STRING{GEOINT    = "Geofis.\ Int."}			% Geofisica Internacional (Mexican journal -- vols. 3--5 contained proceedings from a hurricane conference
+@STRING{GEOPUB    = "Geofys.\ Publ."}
+@STRING{GPC       = "Global Planet.\ Change"}
+@STRING{HP        = "Health Phys."}
+@STRING{IAOP      = "Izv.\ Atmos.\ Ocean.\ Phys.\ (Engl.\ Transl.)"}
+@STRING{IJC       = "Int.\ J.\ Climatol."}
+@STRING{JAM       = "J.\ Appl.\ Meteor."}		% renamed to name below in 2006
+@STRING{JAMC      = "J.\ Appl.\ Meteor.\ Climatol."}  	% Journal of Applied Meteorology and Climatology (this journal used to be called the Journal of Applied Meteorology before 2006)
+@STRING{JAS       = "J.\ Atmos.\ Sci."}
+@STRING{JAOT      = "J.\ Atmos.\ Oceanic Technol."}
+@STRING{JCAM      = "J.\ Climate Appl.\ Meteor."}	% from 1983--87, now JAMC
+@STRING{JCLI      = "J.\ Climate"}
+@STRING{JCR       = "J.\ Coastal Res."}
+@STRING{JFM       = "J.\ Fluid\ Mech."}
+@STRING{JEM       = "J.\ Eng.\ Math."}			% Journal of Engineering Mathematics
+@STRING{JGR       = "J.\ Geophys.\ Res."}
+@STRING{JHM       = "J.\ Hydrometeor."}
+@STRING{JMS       = "J.\ Mar.\ Syst."}
+@STRING{JM        = "J.\ Meteor."}
+@STRING{JMR       = "J.\ Mar.\ Res."}
+@STRING{JMSJ      = "J.\ Meteor.\ Soc.\ Japan"}
+@STRING{JPO       = "J.\ Phys.\ Oceanogr."}
+@STRING{JOCEAN    = "J.\ Oceanogr."}			% Journal of Oceanography
+@STRING{JOSJ      = "J.\ Oceanogr.\ Soc.\ Japan"}
+@STRING{JSE       = "J.\ Struct.\ Eng."}	% Journal of Structural Engineering at ASCE
+@STRING{JTM       = "J.\ Tropical Meteor."}
+@STRING{JWEIA     = "J.\ Wind Eng.\ Ind.\ Aerodyn."}
+@STRING{MA        = "Meteor.\ Appl."}
+@STRING{MAP       = "Meteor.\ Atmos.\ Phys."}
+@STRING{METMON    = "Meteor.\ Monogr."}
+@STRING{METZEIT   = "Meteor.\ Z."}
+@STRING{MWL       = "Mar.\ Wea.\ Log"}
+@STRING{MWR       = "Mon.\ Wea.\ Rev."}
+@STRING{NAT       = "Nature"}
+@STRING{NHR       = "Nat.\ Hazards Rev."}
+@STRING{NWD       = "Natl.\ Weather Dig."}
+@STRING{OA        = "Oceanol. Aeta"}
+@STRING{OCEAN     = "Oceanography"}                	% a quarterly journal of The Oceanography Society
+@STRING{PAG       = "Pure Appl.\ Geophys."}
+@STRING{PF        = "Phys.\ Fluids"}
+@STRING{PHYSD     = "Physica D"}
+@STRING{PMG       = "Pap.\ Meteor.\ Geophys."}	% Papers in Meteorology and Geophysics
+@STRING{PNAS      = "Proc.\ Natl.\ Acad.\ Sci.\ (USA)"}
+@STRING{PRE       = "Phys.\ Rev.\ E"}
+@STRING{PRSA      = "Proc.\ Roy.\ Soc."}
+@STRING{PT        = "Phys.\ Today"}
+@STRING{PTRS      = "Philos.\ Trans.\ Roy.\ Soc.\ London"}
+@STRING{QJRMS     = "Quart.\ J.\ Roy.\ Meteor.\ Soc."}
+@STRING{RGEO      = "Rev. Geophys."}
+@STRING{SCI       = "Science"}
+@STRING{SOLA      = "SOLA"}				% Scientific Online Letters on the Atmosphere
+@STRING{TAGU      = "Eos, Trans.\ Amer.\ Geophys.\ Union"}
+@STRING{TELLUS    = "Tellus"}
+@STRING{TCFD      = "Theor.\ Comput.\ Fluid Dyn."}
+@STRING{WEA       = "Weather"}
+@STRING{WW        = "Weatherwise"}
+@STRING{WF        = "Wea.\ Forecasting"}
+@STRING{WMOB      = "WMO Bull."}
+
+%% SAMPLE REFERENCES. Insert your own reference database below the line.
+
+@article{balwada2021vertical,
+  title={Vertical fluxes conditioned on vorticity and strain reveal submesoscale ventilation},
+  author={Balwada, Dhruv and Xiao, Qiyu and Smith, Shafer and Abernathey, Ryan and Gray, Alison R},
+  journal={Journal of Physical Oceanography},
+  volume={51},
+  number={9},
+  pages={2883--2901},
+  year={2021}
+}
+
+@article{xiao2023reconstruction,
+  title={Reconstruction of surface kinematics from sea surface height using neural networks},
+  author={Xiao, Qiyu and Balwada, Dhruv and Jones, C Spencer and Herrero-Gonz{\'a}lez, Mario and Smith, K Shafer and Abernathey, Ryan},
+  journal={Journal of Advances in Modeling Earth Systems},
+  volume={15},
+  number={10},
+  pages={e2023MS003709},
+  year={2023},
+  publisher={Wiley Online Library}
+}
+
+@article{shchepetkin2005regional,
+  title={The regional oceanic modeling system ({ROMS}): a split-explicit, free-surface, topography-following-coordinate oceanic model},
+  author={Shchepetkin, Alexander F and McWilliams, James C},
+  journal={Ocean modelling},
+  volume={9},
+  number={4},
+  pages={347--404},
+  year={2005},
+  publisher={Elsevier}
+}
+
+@article{shcherbina.ea:13,
+  title={Statistics of vertical vorticity, divergence, and strain in a developed submesoscale turbulence field},
+  author={Shcherbina, Andrey Y and D'Asaro, Eric A and Lee, Craig M and Klymak, Jody M and Molemaker, M Jeroen and McWilliams, James C},
+  journal={Geophysical Research Letters},
+  volume={40},
+  number={17},
+  pages={4706--4711},
+  year={2013},
+  publisher={Wiley Online Library}
+}
+
+@article{ringler2010unified,
+  title={A unified approach to energy conservation and potential vorticity dynamics for arbitrarily-structured C-grids},
+  author={Ringler, Todd D and Thuburn, John and Klemp, Joseph B and Skamarock, William C},
+  journal={Journal of Computational Physics},
+  volume={229},
+  number={9},
+  pages={3065--3090},
+  year={2010},
+  publisher={Elsevier}
+}
+
+@article{ringler2013multi,
+  title={A multi-resolution approach to global ocean modeling},
+  author={Ringler, Todd and Petersen, Mark and Higdon, Robert L and Jacobsen, Doug and Jones, Philip W and Maltrud, Mathew},
+  journal={Ocean Modelling},
+  volume={69},
+  pages={211--232},
+  year={2013},
+  publisher={Elsevier}
+}
+
+@article{hetland:17,
+  title={Suppression of baroclinic instabilities in buoyancy-driven flow over sloping bathymetry},
+  author={Hetland, Robert D},
+  journal={Journal of Physical Oceanography},
+
+  volume={47},
+  number={1},
+  pages={49--68},
+  year={2017},
+  publisher={American Meteorological Society}
+}
+
+
+@article{schlichting.ea:23,
+  title={Quantification of physical and numerical mixing in a coastal ocean model using salinity variance budgets},
+  author={Schlichting, Dylan and Qu, Lixin and Kobashi, Daijiro and Hetland, Robert},
+  journal={Journal of Advances in Modeling Earth Systems},
+  volume={15},
+  number={4},
+  pages={e2022MS003380},
+  year={2023},
+  publisher={Wiley Online Library}
+}
+
+@article{qu.ea:22,
+  title={Rapid vertical exchange at fronts in the Northern Gulf of Mexico},
+  author={Qu, Lixin and Thomas, Leif N and Wienkers, Aaron F and Hetland, Robert D and Kobashi, Daijiro and Taylor, John R and Hsu, Fucent Hsuan Wei and MacKinnon, Jennifer A and Shearman, R Kipp and Nash, Jonathan D},
+  journal={Nature Communications},
+  volume={13},
+  number={1},
+  pages={5624},
+  year={2022},
+  publisher={Nature Publishing Group UK London}
+}
+
+@article{ILICAK_mom_closure,
+title = {Spurious dianeutral mixing and the role of momentum closure},
+journal = {Ocean Modelling},
+volume = {45-46},
+pages = {37-58},
+year = {2012},
+issn = {1463-5003},
+author = {Mehmet Ilıcak and Alistair J. Adcroft and Stephen M. Griffies and Robert W. Hallberg},
+}
+
+@article{chen2007finite,
+  title={A finite volume numerical approach for coastal ocean circulation studies: Comparisons with finite difference models},
+  author={Chen, Changsheng and Huang, Haosheng and Beardsley, Robert C and Liu, Hedong and Xu, Qichun and Cowles, Geoffrey},
+  journal={Journal of Geophysical Research: Oceans},
+  volume={112},
+  number={C3},
+  year={2007},
+  publisher={Wiley Online Library}
+}
+
+@article{huang2008fvcom,
+  title={FVCOM validation experiments: Comparisons with ROMS for three idealized barotropic test problems},
+  author={Huang, Haosheng and Chen, Changsheng and Cowles, Geoffrey W and Winant, Clinton D and Beardsley, Robert C and Hedstrom, Kate S and Haidvogel, Dale B},
+  journal={Journal of Geophysical Research: Oceans},
+  volume={113},
+  number={C7},
+  year={2008},
+  publisher={Wiley Online Library}
+}
+
+@article{fennel2013sensitivity,
+  title={Sensitivity of hypoxia predictions for the northern Gulf of Mexico to sediment oxygen consumption and model nesting},
+  author={Fennel, Katja and Hu, Jiatang and Laurent, Arnaud and Marta-Almeida, Martinho and Hetland, Robert},
+  journal={Journal of Geophysical Research: Oceans},
+  volume={118},
+  number={2},
+  pages={990--1002},
+  year={2013},
+  publisher={Wiley Online Library}
+}
+
+@article{boccaletti2007mixed,
+  title={Mixed layer instabilities and restratification},
+  author={Boccaletti, Giulio and Ferrari, Raffaele and Fox-Kemper, Baylor},
+  journal={Journal of Physical Oceanography},
+  volume={37},
+  number={9},
+  pages={2228--2250},
+  year={2007}
+}
+
+@article{thomas2008submesoscale,
+  title={Submesoscale processes and dynamics},
+  author={Thomas, Leif N and Tandon, Amit and Mahadevan, Amala},
+  journal={Ocean modeling in an Eddying Regime},
+  volume={177},
+  pages={17--38},
+  year={2008},
+  publisher={American Geophysical Union Washington, DC}
+}
+
+@article{mahadevan2016impact,
+  title={The impact of submesoscale physics on primary productivity of plankton},
+  author={Mahadevan, Amala},
+  journal={Annual review of marine science},
+  volume={8},
+  pages={161--184},
+  year={2016},
+  publisher={Annual Reviews}
+}
+
+@article{fox2011parameterization,
+  title={Parameterization of mixed layer eddies. III: Implementation and impact in global ocean climate simulations},
+  author={Fox-Kemper, Baylor and Danabasoglu, Gokhan and Ferrari, Raffaele and Griffies, SM and Hallberg, RW and Holland, MM and Maltrud, ME and Peacock, S and Samuels, BL},
+  journal={Ocean Modelling},
+  volume={39},
+  number={1-2},
+  pages={61--78},
+  year={2011},
+  publisher={Elsevier}
+}
+
+@article{taylor2023submesoscale,
+  title={Submesoscale dynamics in the upper ocean},
+  author={Taylor, John R and Thompson, Andrew F},
+  journal={Annual Review of Fluid Mechanics},
+  volume={55},
+  pages={103--127},
+  year={2023},
+  publisher={Annual Reviews}
+}
+
+@article{arakawa1977computational,
+  title={Computational design of the basic dynamical processes of the UCLA general circulation model. Methods in Computational Physics},
+  author={Arakawa, A},
+  journal={Advances in Research and Application, Vol. 17: General circulation models of the atmosphere},
+  volume={337},
+  year={1977},
+  publisher={Academic Press, Inc.}
+}
+
+@article{bachman2020interaction,
+  title={Interaction of jets and submesoscale dynamics leads to rapid ocean ventilation},
+  author={Bachman, Scott D and Klocker, Andreas},
+  journal={Journal of Physical Oceanography},
+  volume={50},
+  number={10},
+  pages={2873--2883},
+  year={2020},
+  publisher={American Meteorological Society}
+}
+
+@article{barkan2019role,
+  title={The role of horizontal divergence in submesoscale frontogenesis},
+  author={Barkan, Roy and Molemaker, M Jeroen and Srinivasan, Kaushik and McWilliams, James C and D’Asaro, Eric A},
+  journal={Journal of Physical Oceanography},
+  volume={49},
+  number={6},
+  pages={1593--1618},
+  year={2019}
+}
+
+@article{srinivasan2023forward,
+  title={A forward energy flux at submesoscales driven by frontogenesis},
+  author={Srinivasan, Kaushik and Barkan, Roy and McWilliams, James C},
+  journal={Journal of Physical Oceanography},
+  volume={53},
+  number={1},
+  pages={287--305},
+  year={2023}
+}
+
+@article{mcwilliams2021oceanic,
+  title={Oceanic frontogenesis},
+  author={McWilliams, James C},
+  journal={Annual Review of Marine Science},
+  volume={13},
+  pages={227--253},
+  year={2021},
+  publisher={Annual Reviews}
+}
+
+@article{megann2021exploring,
+  title={Exploring viscosity space in an eddy-permitting global ocean model: Is viscosity a useful control for numerical mixing?},
+  author={Megann, Alex and Storkey, David},
+  journal={Journal of Advances in Modeling Earth Systems},
+  volume={13},
+  number={5},
+  pages={e2020MS002263},
+  year={2021},
+  publisher={Wiley Online Library}
+}
+
+@article{garratt1977review,
+  title={Review of drag coefficients over oceans and continents},
+  author={Garratt, JR},
+  journal={Monthly weather review},
+  volume={105},
+  number={7},
+  pages={915--929},
+  year={1977},
+  publisher={American Meteorological Society}
+}
+
+@article{haidvogel2008ocean,
+  title={Ocean forecasting in terrain-following coordinates: Formulation and skill assessment of the Regional Ocean Modeling System},
+  author={Haidvogel, Dale B and Arango, Hernan and Budgell, W Paul and Cornuelle, Bruce D and Curchitser, Enrique and Di Lorenzo, Emanuele and Fennel, Katja and Geyer, W Rockwell and Hermann, Albert J and Lanerolle, Lyon and others},
+  journal={Journal of computational physics},
+  volume={227},
+  number={7},
+  pages={3595--3624},
+  year={2008},
+  publisher={Elsevier}
+}
+
+@article{umlauf2003generic,
+  title={A generic length-scale equation for geophysical turbulence models},
+  author={Umlauf, Lars and Burchard, Hans},
+  journal={Journal of Marine Research},
+  volume={61},
+  number={2},
+  pages={235--265},
+  year={2003},
+  publisher={Sears Foundation for Marine Research}
+}
+
+@article{large1994oceanic,
+  title={Oceanic vertical mixing: A review and a model with a nonlocal boundary layer parameterization},
+  author={Large, William G and McWilliams, James C and Doney, Scott C},
+  journal={Reviews of geophysics},
+  volume={32},
+  number={4},
+  pages={363--403},
+  year={1994},
+  publisher={Wiley Online Library}
+}
+
+@article{shchepetkin1998quasi,
+  title={Quasi-monotone advection schemes based on explicit locally adaptive dissipation},
+  author={Shchepetkin, Alexander F and McWilliams, James C},
+  journal={Monthly weather review},
+  volume={126},
+  number={6},
+  pages={1541--1580},
+  year={1998},
+  publisher={American Meteorological Society}
+}
+
+@article{harrigan2020glofas,
+  title={GloFAS-ERA5 operational global river discharge reanalysis 1979--present},
+  author={Harrigan, Shaun and Zsoter, Ervin and Alfieri, Lorenzo and Prudhomme, Christel and Salamon, Peter and Wetterhall, Fredrik and Barnard, Christopher and Cloke, Hannah and Pappenberger, Florian},
+  journal={Earth System Science Data},
+  volume={12},
+  number={3},
+  pages={2043--2060},
+  year={2020},
+  publisher={Copernicus GmbH}
+}
+
+@article{wharton2024deeper,
+  title={Deeper and stronger North Atlantic Gyre during the Last Glacial Maximum},
+  author={Wharton, Jack H and Renoult, Martin and Gebbie, Geoffrey and Keigwin, Lloyd D and Marchitto, Thomas M and Maslin, Mark A and Oppo, Delia W and Thornalley, David JR},
+  journal={Nature},
+  pages={1--6},
+  year={2024},
+  publisher={Nature Publishing Group UK London}
+}
+
+@article{koul2024predicted,
+  title={A predicted pause in the rapid warming of the Northwest Atlantic Shelf in the coming decade},
+  author={Koul, Vimal and Ross, Andrew C and Stock, Charles and Zhang, Liping and Delworth, Thomas and Wittenberg, Andrew},
+  journal={Geophysical Research Letters},
+  volume={51},
+  number={17},
+  pages={e2024GL110946},
+  year={2024},
+  publisher={Wiley Online Library}
+}
+
+@article{hilditch2025observations,
+  title={Observations of subduction, downward heat flux and dense filament collapse in the northern Gulf of Mexico},
+  author={Hilditch, James P and Bergentz, Kerstin and Northcott, Devon and Luko, Caique Dias and Cohanim, Kaylie and Schlichting, Dylan and Sanchez-Rios, Alejandra and Weiss, Kaelan and Hetland, Robert and MacKinnon, Jennifer and others},
+  journal={Journal of Geophysical Research: Oceans},
+  volume={130},
+  number={11},
+  pages={e2025JC022570},
+  year={2025},
+  publisher={Wiley Online Library}
+}
+
+@article{qu2022rapid,
+  title={Rapid vertical exchange at fronts in the Northern Gulf of Mexico},
+  author={Qu, Lixin and Thomas, Leif N and Wienkers, Aaron F and Hetland, Robert D and Kobashi, Daijiro and Taylor, John R and Hsu, Fucent Hsuan Wei and MacKinnon, Jennifer A and Shearman, R Kipp and Nash, Jonathan D},
+  journal={Nature Communications},
+  volume={13},
+  number={1},
+  pages={5624},
+  year={2022},
+  publisher={Nature Publishing Group UK London}
+}
+
+@article{epke2025overturning,
+  title={Overturning of mixed layer eddies in a submesoscale resolving simulation of the North Atlantic},
+  author={Epke, Moritz and Linardakis, Leonidas and Korn, Peter and Br{\"u}ggemann, Nils},
+  journal={Journal of Physical Oceanography},
+  year={2025},
+  publisher={American Meteorological Society}
+}
+
+@article{uchida2022cloud,
+  title={Cloud-based framework for inter-comparing submesoscale permitting realistic ocean models},
+  author={Uchida, Takaya and Le Sommer, Julien and Stern, Charles and Abernathey, Ryan and Holdgraf, Chris and Albert, Aur{\'e}lie and Brodeau, Laurent and Chassignet, Eric and Xu, Xiaobiao and Gula, Jonathan and others},
+  journal={Geoscientific Model Development Discussions},
+  volume={2022},
+  pages={1--32},
+  year={2022},
+  publisher={G{\"o}ttingen, Germany}
+}
+
+@article{dong2024submesoscales,
+  title={Submesoscales are a significant turbulence source in global ocean surface boundary layer},
+  author={Dong, Jihai and Fox-Kemper, Baylor and Wenegrat, Jacob O and Bodner, Abigail S and Yu, Xiaolong and Belcher, Stephen and Dong, Changming},
+  journal={Nature Communications},
+  volume={15},
+  number={1},
+  pages={9566},
+  year={2024},
+  publisher={Nature Publishing Group UK London}
+}
+
+
+@online{xroms,
+    author = {Thyng, Kristen and Hetland, Robert and Filipe and Renkl, Christopher and Smith, Mike, and Constantinou, Navid C., and Xomchuk, Veronica Ruiz and rsignell},
+    title = "xoceanmodel/xroms: v0.6.2",
+    url  = "http://doi.org/10.5281/zenodo.16969523",
+    addendum = "(accessed: 07.12.2026)"
+}
+
+@article{st2024sensitivity,
+  title={On the sensitivity of coastal hypoxia to its external physical forcings},
+  author={St-Laurent, P and Friedrichs, MAM},
+  journal={Journal of Advances in Modeling Earth Systems},
+  volume={16},
+  number={1},
+  pages={e2023MS003845},
+  year={2024},
+  publisher={Wiley Online Library}
+}

@@ -1,0 +1,59 @@
+\documentclass{article}
+
+\usepackage[
+backend=biber,
+style=alphabetic,
+sorting=ynt
+]{biblatex}
+
+\addbibresource{mybibliography.bib}
+
+\title{Bibliography management: \texttt{biblatex} package}
+\author{Share\LaTeX}
+\date{ }
+
+\begin{document}
+
+\maketitle
+
+\section{First section}
+
+@article{knuth:1984,
+  title={Literate Programming},
+  author={Donald E. Knuth},
+  journal={The Computer Journal},
+  volume={27},
+  number={2},
+  pages={97--111},
+  year={1984},
+  publisher={Oxford University Press}
+}
+
+Using \texttt{biblatex} you can display bibliography divided into sections,
+depending of citation type \cite{knuth:1984}. 
+Let's cite! The Einstein's journal paper \cite{einstein} and the Dirac's 
+book \cite{dirac} are physics related items. 
+Next, \textit{The \LaTeX\ Companion} book \cite{latexcompanion}, the 
+Donald Knuth's website \cite{knuthwebsite}, \textit{The Comprehensive 
+Tex Archive Network} (CTAN) \cite{ctan} are \LaTeX\ related items; but 
+the others Donald Knuth's items \cite{knuth-fa,knuth-acp} are dedicated 
+to programming. 
+
+@article{xiao2023reconstruction,
+  title={Reconstruction of surface kinematics from sea surface height using neural networks},
+  author={Xiao, Qiyu and Balwada, Dhruv and Jones, C Spencer and Herrero-Gonz{\'a}lez, Mario and Smith, K Shafer and Abernathey, Ryan},
+  journal={Journal of Advances in Modeling Earth Systems},
+  volume={15},
+  number={10},
+  pages={e2023MS003709},
+  year={2023},
+  publisher={Wiley Online Library}
+}
+
+Here's an interesting paper on similar topics \cite{xiao2023reconstruction}!
+
+
+\medskip
+
+\printbibliography
+\end{document}
