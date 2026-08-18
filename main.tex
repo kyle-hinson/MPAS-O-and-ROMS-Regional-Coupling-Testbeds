@@ -1,217 +1,118 @@
 \documentclass{article}
-
+\usepackage{authblk}
 \usepackage[utf8]{inputenc}
-
+\usepackage[T1]{fontenc}
 \usepackage[pdftex]{graphicx}
-\usepackage{amsmath,color}
+\usepackage{amsmath,amssymb,color}
+\usepackage{mathtools}
 \usepackage{natbib}
 \usepackage{palatino}
 \usepackage{float}
+\usepackage{placeins}
 \usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{subcaption}
 \usepackage{nicefrac}
 \usepackage{siunitx}
 \usepackage{appendix}
-\usepackage{mathtools}
-\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage[hidelinks]{hyperref}
 
+\usepackage{todonotes}
+%\usepackage[disable]{todonotes}
+\definecolor{todoblue}{RGB}{30,90,220}
+\definecolor{reviewred}{RGB}{200,30,30}
+\newcommand{\TODOc}[1]{\todo[inline,color=todoblue!18,bordercolor=todoblue,linecolor=todoblue]{\textbf{\textcolor{todoblue}{TODO:}} #1}}
+\newcommand{\REVIEWc}[1]{\todo[inline,color=reviewred!16,bordercolor=reviewred,linecolor=reviewred]{\textbf{\textcolor{reviewred}{REVIEW:}} #1}}
 
 \clubpenalty=10000
 \widowpenalty=10000
 \displaywidowpenalty=3000
 \predisplaypenalty=3000
 \postdisplaypenalty=2000
-
+\setlength{\emergencystretch}{3em}
+\raggedbottom
+\captionsetup{justification=raggedright,singlelinecheck=false}
 \setlength{\textwidth}{6.5in}
 \setlength{\oddsidemargin}{0.in}
 \setlength{\topmargin}{-10pt}
 \setlength{\headsep}{0in}
-\setlength{\textheight}{8.95in}%vijay
+\setlength{\textheight}{8.95in}
+\sisetup{detect-all,range-units = single,range-phrase = --}
+\DeclareSIUnit\PSU{PSU}
+\newcommand{\Linf}{L_\infty}
+\newcommand{\Lone}{L_1}
+\newcommand{\Ltwo}{L_2}
+\newcommand{\interior}{\text{interior}}
+\newcommand{\partialset}{\text{partial}}
+\newcommand{\fracmpas}{\chi}
+\newcommand{\hkm}{h}
+\newcommand{\hR}{h_{\mathrm{ROMS}}}
+\newcommand{\hM}{h_{\mathrm{MPAS}}}
+\newcommand{\MPAS}{\textsc{MPAS}\xspace}
+\newcommand{\ROMS}{\textsc{ROMS}\xspace}
+\newcommand{\MOAB}{\textsc{MOAB}\xspace}
+\newcommand{\zmpas}{z}
+\newcommand{\hRatio}{\varrho}
 
-\title{Remapping strategies for coupling ROMS to MPAS-O in multiple regional domains}
-\author{Kyle E. Hinson, Robert Hetland, Vijay Mahadevan, Iulian Grindeanu, Kat Smith}
+\title{Enhanced Submesoscale Feature Resolution in Multiscale Ocean Simulations}
+\author[1]{Authors**}
+\affil[1]{Institutions}
 \date{\today}
-
 \begin{document}
-
 \maketitle
-
+\TODOc{Author metadata: Replace placeholder for authors and institution fields.}
+%
+%
 \begin{abstract}
-Abstract text about the importance of understanding large scale feedbacks by getting some small scale processes right in critical regions.
+Global ocean models must compromise on horizontal resolution, even when regional refinement is employed, in order to afford climate-length integrations within reasonable wall-clock times. Regional downscaling provides a practical approach for embedding finer process resolution within global simulations, but requires the consistent transfer of three-dimensional state fields between coupled model components. Differences in mesh topology, the horizontal resolutions represented by the parent and regional domains, and the vertical coordinate systems used by the models introduce additional complications in constructing a coupler whose accuracy and conservation properties can be verified. We present a separable \MPAS$\leftrightarrow$\ROMS tensor-product transfer that applies a globally conservative horizontal map, level by level, over the common mesh support, followed by a monotone, integral-preserving vertical remap for salinity, temperature, and velocity fields supplied as multiscale boundary conditions. Verification with a smooth analytic field and daily-mean ocean state shows decreasing errors as target-grid sequences are refined and verifies the consistency and component conservation properties of the transfer algorithm. Additionally, such convergence studies also help compute the optimal regional model grid resolutions that balance computational cost and accuracy. We further investigate feature resolution in the deep-ocean North Atlantic and Gulf Stream domains, together with coastal and estuarine applications in the Bay of Bengal and Chesapeake Bay. These regional applications develop finer-scale variability and enhanced submesoscale structure across open-ocean, coastal, and estuarine settings, demonstrating the feasibility of the proposed multiscale downscaling approach.
 \end{abstract}
+%
+\vspace{0.5em}
+\noindent\textbf{Keywords:} multiscale ocean coupling; volumetric remapping;
+\MPAS{}-Ocean; \ROMS.
 
+%
+\listoftodos[\textbf{Outstanding TODO (blue) and REVIEW (red) notes}]
+\clearpage
 
-Brief outline of paper:
-
-\begin{itemize}
-    \item Coupling of regional ocean models to global forcings will require thoughtful changes to produce a consistent set of initial and boundary conditions.
-    \item Overview of different remapping methods, benefits and drawbacks
-    \item Introduction of multiple real-world regional domains that get progressively more challenging for the remap to work with
-    \item Conservation of tracers when remapping from global to regional and back
-    \item Real-world results of remapping. Degradation of results as we move closer to more challenging coastal environments
-\end{itemize}
-
-
+%
 \section{Introduction}
+\input{sections/sec_introduction}
+%
+\section{Methodology}\label{sec:methods}
+\input{sections/sec_methodology}
+%
+\section{Results}\label{sec:results}
+\input{sections/sec_results_verification}
+%
+\FloatBarrier
+%\section{Discussion}\label{sec:discussion}
+\subsection{Discussion}\label{sec:discussion}
+The transfer improves over the coarse portion of the tested sequences, but its composite round-trip error saturates for real fields on the finest pair. For the controlled analytic field, isolating the individual stages shows that refining the target alone runs into the limit set by the fixed parent representation, while cancellation between the forward and reverse legs makes the round trip a different quantity from the one-way forcing error. Requiring the vertical interpolant to conserve layer integrals makes the composed tensor-product transfer first order overall, which is consistent with the measured decrease, though confirming the rate by fitting would require a longer sequence than the four grids used here.
 
-The ability to run highly resolved, submesoscale-permitting global simulations of ocean dynamics is a computationally intensive process that has limited examples of successful applications \citep{uchida2022cloud,epke2025overturning}. These small-scale physical dynamics are known to be an important component of surface layer turbulence \citep{dong2024submesoscales} and improving our understanding of the transport of heat, salt, momentum, and tracers between the surface and deep ocean \citep{qu.ea:22, hilditch2025observations}. Previous attempts to simulate small-scale coastal ocean features using the Department of Energy's global unstructured ocean model (MPAS-O, Modeling Predictions Across Scales - Ocean) found that there were numerous grid-related challenges that impacted the limitations of model refinement capabilities, in addition to the severe computational demand  (Schlichting et al., in review). Capturing feedback processes of these features on global scale changes is thus limited to nesting finer-scale regional models within global simulations.
+The regional applications show finer-scale relative-vorticity structure and domain-dependent kinetic-energy changes across open-ocean, boundary-current, coastal, and estuarine settings. These descriptive results combine transferred information with variability generated by regional dynamics and should not substitute for transfer verification. 
+%The application ratios are 0.21 (North Atlantic), 0.24 (Gulf Stream), 0.35 (Bay of Bengal), and 0.06 (Chesapeake Bay); the Gulf Stream and Bay of Bengal grids coincide with the r3 verification grids.
 
- Regionally refined meshes face additional challenges related to the choice of vertical resolution and mixing parameterizations that are designed for generic open ocean conditions and may be inadequate for high-resolution or coastal simulations. Conservation of mass and momentum being the main one? Common issues encountered when coupling on rectangular meshes. To the best of the authors' knowledge, this effort may also mark one of the first instances wherein an unstructured global mesh has been used in an offline coupling to provide initial and boundary conditions for a structured grid mesh.
+Several limitations qualify these results. The parent resolution is fixed and varies in space, the evaluation support changes with target refinement, and the Chesapeake blending procedure is not specified in enough detail to be repeated exactly. Velocities are transferred componentwise and remain Earth-relative and cell centered, without rotation to the target curvilinear basis, interpolation to staggered points, or any constraint on the discrete divergence. Bathymetry smoothing stabilized the Bay of Bengal case but its parameters are domain dependent. Neither finer targets nor higher-order interpolation can remove the errors imposed by the parent representation, the boundary forcing, the land masks, or estuarine structure that the parent never resolved.
 
-This work implements a proof-of-concept adaptive approach to implement one-way offline nesting between an unstructured parent ocean model MPAS-O and a structured child model ROMS in three regional domains of varied complexity. Previous work has demonstrated how both ocean models similarly represent physical dynamics as a consequence of baroclinic instabilities in an idealized domain from 10 km to 100 m (Hinson et al., in review), as well as the limitations of regionally focused refinement in MPAS-O within a specified coastal domain (Schlichting et al., in review). This paper will outline the methodology by which the global MPAS-O solution can be remapped onto a regional ROMS grid for use as initial and boundary conditions. The results of physical dynamics within four regional domains will then also be shown.
+\TODOc{add more relevant discussions from real world one-way runs; can reference videos of tracer evolution and dsicuss the chesapeake case and how that was achieved. Complications in getting that to work and why this augments global models.}
 
-\section{Methods}
+%
+\section{Summary and future directions}\label{sec:conclusions}
+We presented a separable volumetric transfer between unlike horizontal meshes and vertical coordinates, combining normalized horizontal remapping with column-wise monotone, reconstructed-profile integral-preserving vertical remapping. Verification with analytic and real fields showed errors decreasing over the coarse part of the sequence and saturating for real fields on the finest pair, while controlled analytic experiments distinguished the one-way forcing error from the round trip. Because the vertical interpolant is constrained to conserve layer integrals, the composed scheme is first order overall, and the observed decrease is consistent with that expectation, although four grids are too few to fit the rate; isolating the column operator on synthetic vertical domains would measure it directly. Higher order is available from quasi-interpolants, at the cost of conservation, monotonicity, or both.
 
-Here we break down the methodology into sections focusing on (1) the MPAS to ROMS interpolation schemes, (2) description of an analytical technique used to compare tracer and velocity conservation fields, (3) descriptions of the four regional domains that increase in methodological complexity, and (4) analysis techniques and methodological modifications required for quasi-standardization across the multiple domains.
+The regional applications developed finer-scale vorticity structure and domain-dependent changes in kinetic energy. These cases suggest a target scale near $\hRatio\approx0.2$ as a reasonable starting point, though we would recommend confirming it with a short refinement sequence in each new domain. The Bay of Bengal required bathymetry smoothing before it would run stably, and Chesapeake Bay required native geometry together with blended estuarine fields. Both cases illustrate why the fidelity of the transfer and the physical interpretation of the regional solution need to be assessed separately.
 
-\subsection{MPAS Interpolation and Remapping}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=6.0in]{Figures/Fig1 remapping schematic.png}
-    \caption{Example schematic of overview of methodology and highlighting regional domains. }
-    \label{fig:remap_methods}
-\end{figure}
-
-Atmospheric forcings are provided by MPAS-A?
-
-Reasons not to do fully conservative remapping:
-\begin{itemize}
-    \item point a
-    \item point b
-    \item point c
-\end{itemize}
-
-Could include another figure with more detail about the vertical remapping between the z-grid and sigma grid.
-
-%\newpage
-
-\subsection{Analytical tests of remapping fidelity}
-Description of reasoning and procedure to go from global to remapped and then back again to assess conservation of tracers/velocities.
-
-\subsection{MPAS-O and ROMS model domains}
-MPAS-O is a global ocean model that uses a horizontally varying unstructured mesh and a z* vertical coordinate system \citep{ringler2013multi}. For this work, a global simulation run at an average horizontal resolution of approxiately 10 km was applied, with specific parameterizations that include...
-
-Four ROMS \citep{shchepetkin2005regional} modeling domains were used for these experiments, all with approximately spanning a range of 600 m to 4 km horizontal spatial resolution (Fig.~\ref{fig:zed_comparison}). The first domain in the North Atlantic is an implementation of the NISKINE model (Simmons reference), sited to capture key physical dynamics associated with the initiation of the Atlantic Meridional Overturning Circulation (AMOC) between 56 to 60 $^\circ$N and 26 to 20 $^\circ$W. This North Atlantic domain has an average horizontal spatial resolution of 2 km with no land mask and an average depth of approximately 2750 m and represents the simplest configuration of an open ocean simulation with relatively consistent bathymetry. The Gulf Stream domain represents an increased step in complexity, with more sharply varying bathymetry in an open ocean environment and an energetic western boundary current. The domain utilizes a curvilinear grid developed using pygridgen (citation?) designed to follow the approximate range of the meandering western boundary current as it departs from the U.S. East Coast between 33 to 43 $^\circ$N and 75 to 57 $^\circ$W. This model has an average horizontal spatial resolution of 1.6 km with no land mask, but its sharper bathymetry gradients are due to its inclusion of the southern edge of Georges Bank. Third, an implementation of a previously developed model covering most of the Bay of Bengal (Simmons reference) is also applied to test the capabilities of this research in a nearshore environment with a land mask between 9 to 24 $^\circ$N and 80 to 97 $^\circ$E. This model has an average horizontal resolution of 4 km with masking on all sides of the domain, steep bathymetry gradients, and receives river inputs from a global reanalysis product \citep{harrigan2020glofas}. Lastly, we utilize another previously developed ROMS application within the Chesapeake Bay (ROMS-ECB, \cite{st2024sensitivity}) to test the remapping methodology in a setting with large tracer gradients, a highly complex land-masked coastline, and riverine inputs. This estuarine model, which extends between 36.5 to 39.6 $^\circ$N and 77.3 to 75 $^\circ$W, has an average horizontal resolution of 600 m and 20 vertical levels to better capture physical and biogeochemical complexities associated with a deep channel and the large contributions of riverine discharge to mixing processes.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=7.5in]{Figures/model_bathymetries_v20260629.png}
-    \caption{Combined plots of MPAS-O and ROMS bathymetries for the 4 regional domains selected. Overlaid on top of MPAS-O bathymetries are the depths of the ROMS domains, with their bathymetries inside the white polygons.}
-    \label{fig:zed_comparison}
-\end{figure}
-
-
-
-
-\subsection{Domain analyses and methodological modifications}
-
-Time series of average surface kinetic energy levels were computed for each of the regional realistic domains as this metric provides a relatively simple check on a combination of remapped velocity fields. This comparison relied on the native grid MPAS-O solution (where kinetic energy is directly computed online at the cell center), the remapped solution, and the regionally refined solution where the remapped solution is used to provide initial and boundary conditions. For both the remapped and regionally refined solutions, surface kinetic energy is computed during post-processing by averaging the velocity components from cell edges to cell centers \citep{xroms}.
-
-Multiple points of failure in applying remapped initial and boundary fields to ROMS domains became apparent as additional challenges of regional domains were introduced. In particular, the steep continental slope bathymetric gradients found in the Bay of Bengal and the comparatively coarse resolution of the Chesapeake Bay represented in MPAS-O led to multiple model failures. Within the remapped solution in the Bay of Bengal, insufficient smoothing of vertical levels led to the erroneous production of anomalously warm water at mid-depths ($>$ 28$^\circ$C at approximately 100-200 m) at multiple points near the masked coastline. This subtle but persistent error was then corrected by applying vertical smoothing to scalar fields, and produced a more stable simulation. Within the Chesapeake Bay domain, the sizable number of grid cells that were incorrectly masked by MPAS-O made it immediately apparent that a direct application of the remapped solution was insufficient due to its coarse resolution. In this instance, a blend of the two grids and remapped fields was performed to better ensure stability in the ROMS simulation. Within the estuary, delineated by the Bay mouth, all scalar, velocity, and bathymetry fields were set to pre-determined conditions that best matched MPAS-O remapped estimates for a particular date. In an area between the Bay mouth and the offshore edge of the model domain, a linearly decreasing (increasing) mixture of the ROMS (MPAS-O) fields were averaged together until they reached a point further offshore where the entirety of the remapped solution was supplied by MPAS-O alone. The only component of this simulation that remained unchanged by MPAS-O contributions was the land mask, which if used would introduce additional extrapolations and would likely be insufficient for ROMS model stability.
-
-
-\section{Results}
-
-Include figures and metrics that best demonstrate the additional benefits that increased resolution can bring to these simulations.
-
-\subsection{MPAS-O Interpolation Results}
-
-Description of metrics associated with these interpolation schemes? Measure of stability or difference between interpolated grid and original MPAS-O results? Include a figure here showing some aspect of the extruded meshes?
-
-\subsection{Regional Domain Results}
-
-Simulating a more highly resolved regional mesh using ROMS and forced by MPAS-O boundary conditions produces a richer submesoscale eddy field across all of the regional domains (Fig.~\ref{fig:zeta_snapshots}). Daily-averaged surface kinetic energy time series exemplify this transition, as the variability of ROMS results are greater than MPAS-O for in all regions (Fig.~\ref{fig:region_KE}). The refined ROMS simulations are generally more energetic than the MPAS-O and remapped solutions.
-
-%Histograms of relative vorticity across all three domains show similar changes in the distribution, with a lesser peak in zero relative vorticity and greater variance in the distribution (Fig.~\ref{fig:zeta_histograms}). This pattern is clearly evidenced by the representation of submesoscale fronts and eddies at higher resolution (Fig.~\ref{fig:zeta_snapshots}).
-
-subsection figure 1: North Atlantic salinity cross section and surface level view with/without refinement. Could include some metric of mixing between the two runs?
-
-subsection figure 2: Gulf Stream 
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=7.0in]{Figures/zeta_3domains_v0.png}
-    \caption{Relative vorticity surface plots for 3 regional domains. }
-    \label{fig:zeta_snapshots}
-\end{figure}
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=7.0in]{Figures/Region_KE_TimeSeries_3domains.png}
-    \caption{Surface KE time series results for regional domains. }
-    \label{fig:region_KE}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=7.0in]{Figures/chesbay_ke_zeta.jpg}
-    \caption{Surface KE time series and $\zeta/f$ histogram for Chesapeake Bay. }
-    \label{fig:chesResults}
-\end{figure}
-
-\begin{table}[]
-    \centering
-    Example Summary Statistics
-    
-    \begin{tabular}{c|crrr}
-         Resolution & Ocean Model & $\phi_{PCA}$ & $\frac{\mathrm{major}}{\mathrm{minor}}$ & $\langle\frac{\partial \tilde{u}}{\partial \tilde{x}}\rangle$\\ [0.5ex]     
-         \hline\hline
-         \multirow{2}{4em}{N. Atlantic} & MPAS-O & -40.8$^\circ$ & 4.78 & -0.096 \\
-         & ROMS & -50.9$^\circ$ & 2.14 & -0.040
-         \\
-         \hline
-         \multirow{2}{4em}{Gulf Stream} & MPAS-O & -43.3$^\circ$ & 5.38 & -0.109 \\
-         & ROMS & -45.5$^\circ$ & 2.39 & -0.114
-         \\
-         \hline
-         \multirow{2}{4em}{Bay of Bengal} & MPAS-O & -42.3$^\circ$ & 3.30 & -0.199 \\
-         & ROMS & -37.8$^\circ$ & 2.21 & -0.191
-         \\
-         \hline
-         \multirow{2}{4em}{Ches. Bay} & MPAS-O & -35.7$^\circ$ & 2.76 & -0.232 \\
-         & ROMS & -29.4$^\circ$ & 2.01 & -0.238
-         \\
-         \hline
-
-
-    \end{tabular}
-
-    \caption{Table here comparing different metrics for all regions?}
-    \label{tab:ideal_resolution_params}
-\end{table}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=7.0in]{Figures/saltCompare_ChesBay_frames_0055.png}
-    \caption{Chesapeake Bay and surrounding ocean surface salinity at Day 55. The coarser resolution results in the left panel show typical MPAS-O resolutions in the coastal domain, while the results in the right panel are the product of a remapped and blended simulation.}
-    \label{fig:chesSalt_compare}
-\end{figure}
-
-\section{Discussion}
-
-This paper provides a proof of concept in multiple regional domains of increasing complexity that ROMS can be coupled within global MPAS-O simulations. Ongoing and future work will better quantify how this nested approach informs global responses, as well as its strengths and limitations in different ocean regions.
-
-Paragraph comparing and contrasting the different types of nudging responses etc. needed for different regions?
-
-Examples of how this could benefit future research: In the Gulf Stream, such an application could be used to more accurately simulate long-term strengthening and weakening trends over different climatic periods \citep{wharton2024deeper}, or provide additional insights into how the transient movements of the western boundary current may impact near-term coastal ocean warming projections \citep{koul2024predicted}.
-
-Talk about problems that will arise with 2-way nesting. finite volume is conservative but imprints the parent grid. other approaches that may not be locally conservative but globally is something we need to consider
-
-In future will compare results to online results, these are all offline results. worth it to do higher frequency now?
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% REFERENCES
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Make your BibTeX bibliography by using these commands:
-% \bibliographystyle{ametsocV6}
-% \bibliography{references}
+Two checks would strengthen the verification most directly. A common-support comparison for the real fields on the finest grid pair would resolve whether the apparent saturation is genuine, and exercising the column remapper alone on synthetic vertical domains, where the target range is embedded in, coincides with, or extends beyond the source range, would establish the order of the vertical operator without the confounding effects of the horizontal map and the changing support. Beyond those, forward-only tests for real tracers against surrogate references, sensitivity studies spanning several parent resolutions, and repeated timings would all help. With those checks in hand, the transfer can be evaluated for online one-way exchange and, eventually, for two-way coupling, where explicit tracer-inventory and land--estuary consistency tests become essential.
+%
+\section*{Data and Code Availability}
+\TODOc{Availability: Replace with complete data and method access information.}
+%
+\section*{Acknowledgments}
+\TODOc{Acknowledgments: Replace with funding and computing acknowledgments.}
+%
 \clearpage
 \bibliographystyle{ametsocV6}
 \bibliography{references}
-
-
 \end{document}
