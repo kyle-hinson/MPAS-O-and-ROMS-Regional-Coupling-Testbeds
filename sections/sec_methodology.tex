@@ -93,7 +93,7 @@ factors are in turn developed in \S \ref{sec:horizontal} and
 
 \subsection{Horizontal remap as a sparse linear map}\label{sec:horizontal}
 
-Several choices are available for computing projections or interpolants from a global spherical manifold mesh like \MPAS onto an embedded \ROMS regional domain. The standard approach is the use of $L_2$ minimization~\citep{zienwincsk} that preserves both global and local integrals and is therefore exactly conservative. The low order variant of the minimizer is also truly property-preserving (monotone). %In the coarse-to-fine regime considered here it also imprints the \MPAS tessellation on the \ROMS field, which is why we do not use it for tracer transfer, as \S\ref{sec:why-not-fv} develops in detail and Fig.~\ref{fig:mesh-imprinting} demonstrates. We first set out both constructions.
+Several choices are available for computing projections or interpolants from a global spherical manifold mesh like \MPAS onto an embedded \ROMS regional domain. The standard approach is the use of $L_2$ minimization~\citep{dukowicz1987accurate} that preserves both global and local integrals and is therefore exactly conservative. The low order variant of the minimizer is also truly property-preserving (monotone). %In the coarse-to-fine regime considered here it also imprints the \MPAS tessellation on the \ROMS field, which is why we do not use it for tracer transfer, as \S\ref{sec:why-not-fv} develops in detail and Fig.~\ref{fig:mesh-imprinting} demonstrates. We first set out both constructions.
 Alternatively, one could also utilize variations of delaunay-based natural neighbor or bilinear interpolants, while preserving the integrals as designed in implementations like TempestRemap~\citep{ullrich2015arbitrary}. The implications of some of these choices will be further explored.
 
 For a fixed \MPAS depth level $k$, the horizontal factor $W$ of
@@ -120,18 +120,32 @@ weight to the area of geometric overlap between \ROMS cell $i$ and
 \end{equation}
 where $\Omega_i$, $\Omega_j$ are the (spherical) \ROMS and \MPAS
 polygons and $A_{ij}$ their intersection area. This map is
-\emph{conservative only over the \ROMS-covered subdomain}, a
-qualification that matters here because the \ROMS{} domain is a bounded
-region embedded in the global \MPAS{} mesh: because
-$\sum_i A_{ij} = A^M_j$ holds only for an \MPAS cell fully covered by the
+\emph{conservative only over the \ROMS bounded subdomain}, a
+qualification that matters here because the \ROMS{} domain is a subset embedded in the global \MPAS{} mesh. 
+
+
+%\paragraph{Coverage classification.}
+% \label{sec:classification}
+Note that the \ROMS mesh is a bounded region embedded in the global \MPAS mesh, and so every \ROMS cell is labeled based on whether it is within the convex hull of the \MPAS coverage mesh~\citep{mahadevan2020coupling}. Let $f^M_j$ and $f^R_i$ denote the covered fractions of \MPAS cell $j$ and \ROMS cell $i$, obtained from the overlap areas $A_{ij}$ of the FV supermesh. Cells with $f=1$ are \emph{interior}, and those with $0<f<1$ are only \emph{partially} covered. The interior set, written as $\mathcal{I}$, is the support on which the error norms of \S\ref{conv:sec:verification-method} are evaluated. 
+
+%Coverage-weighted conservation is a separate map property and condition:
+%\begin{equation}
+%	\sum_i A^R_i f^R_i\,\Xi_{i,k}
+%	=\sum_j A^M_j f^M_j\,\Phi_{j,k}.
+%	\label{conv:eq:bilin-conservation}
+%\end{equation}
+%Equation~\eqref{conv:eq:bilin-conservation} is weighted by the covered fractions on both sides, so it constrains only the shared support of the two meshes. It is satisfied by the conservative FV map of Eq.~\eqref{eq:fv-weight} but not by the normalized bilinear map of Eq.~\eqref{conv:eq:bilin-weight}, which is the trade discussed in \S\ref{sec:why-not-fv}.
+
+%The horizontal classification is essentially fixed across each refinement sequence, because it depends on the target footprint rather than on the target spacing. In the Gulf Stream, 10{,}158--10{,}162 source cells are interior and 534--536 are partial across r1--r4, and in the Bay of Bengal, 4249--4265 are interior and 280--320 partial. What does change with refinement is the number of target columns discarded for lack of a valid vertical reconstruction, which is reported alongside the Bay of Bengal sequence below.
+
+Note that since
+$\sum_i A_{ij} = A^M_j$ holds only for a \MPAS cell fully covered by the
 union of \ROMS cells, the area-weighted integral identity
 $\sum_i A^R_i \psi_i = \sum_j A^M_j \phi_j$ is exact for \MPAS cells
-interior to the \ROMS footprint and is broken for \MPAS cells that
-the limited-domain \ROMS grid only partially overlaps. Conservation
-therefore applies to the covered interior, never to the \MPAS cells
-straddling the \ROMS boundary, which is the boundary qualification we
-enforce operationally through the interior/partial classification of
-\S\ref{sec:classification}. The map is first-order accurate and, being
+interior to the \ROMS boundary and needs to include a fractional weighting (computed from supermesh construction) for \MPAS cells that only partially overlaps with \ROMS domain. Hence computing the conservation of fluxes and states in the \ROMS domain boundary strictly requires topological intersections, without which we
+can only enforce weak conservation over $\mathcal{I}$. 
+
+The map is first-order accurate and, being
 a convex average of the \MPAS values ($W^{\mathrm{FV}}_{ij}\ge 0$,
 $\sum_j W^{\mathrm{FV}}_{ij}=1$ on fully-covered cells), it is
 property-preserving on those cells: the transferred values are bounded
@@ -159,24 +173,19 @@ The conservative finite-volume (FV) map in \eqref{eq:fv-weight} is the lowest-or
 	\int_{\Omega}(f-g)^2\,\mathrm{d}\Omega ,
 	\label{eq:l2-min}
 \end{equation}
-leading to a discrete system $W_{S\rightarrow T}G=F$, where $G$ and $F$ are the mass matrices of the \ROMS and \MPAS bases. Minimizing Eq.~\eqref{eq:l2-min} over the overlap domain is what makes the resulting map conservative, and at lowest order it recovers the area-ratio weights of Eq.~\eqref{eq:fv-weight}. Higher-order conservative, monotone, and smooth alternatives are available \citep{lauritzen2008monotone,lee1997mba}, but here we focus on the first-order FV map and the normalized bilinear map in \eqref{conv:eq:bilin-weight}, which capture the main trade-off relevant to \MPAS--\ROMS downscaling.
+leading to a discrete system $W_{S\rightarrow T}G=F$, where $G$ and $F$ are the mass matrices of the \ROMS and \MPAS bases. Minimizing Eq.~\eqref{eq:l2-min} over the overlap domain is what makes the resulting map conservative, and at lowest order it recovers the area-ratio weights of Eq.~\eqref{eq:fv-weight}. Higher-order conservative, monotone, and smooth alternatives are available \citep{lauritzen2008monotone,lee1997mba}, but here we focus on the first-order FV map and the normalized bilinear map in \eqref{conv:eq:bilin-weight}, which capture the main trade-off relevant to \MPAS--\ROMS downscaling experiments.
+%
+%During the downscaling computations and verification procedure, we retain the FV map for coverage classification, since its overlap area weights provide the covered fraction of each cell directly. This factor is not used for tracer soltion transfer in regional coupled runs however, to avoid mesh imprinting artifacts in the remapped fields.
 
-We retain the FV map for coverage classification (\S\ref{sec:classification}), since its overlap-area weights give the covered fraction of each cell directly. We do not use it for tracer transfer, however, because it produces mesh imprinting.
 
-In the configurations considered here the \ROMS cells are typically much smaller than the \MPAS ocean model cells, that is $\hRatio\ll1$. Under first-order FV remapping, all fine \ROMS cells lying within a given \MPAS Voronoi cell receive the same \MPAS cell average. The resulting field is therefore piecewise constant on the \MPAS tessellation, even though it is represented on the fine \ROMS grid. This appears as a staircase pattern whose discontinuities follow \MPAS cell edges.
+%Under first-order FV remapping, all fine \ROMS cells lying within a given \MPAS Voronoi cell receive the same \MPAS cell average. The resulting field is therefore piecewise constant on the \MPAS tessellation, even though it is represented on the fine \ROMS grid. This appears as a staircase pattern whose discontinuities follow \MPAS cell edges.
+%
 
-These discontinuities are not physical gradients. They are introduced solely by the transfer operator and can inject grid-scale noise or adjustment features aligned with the \MPAS mesh when the field is used to initialize or force a regional model. The problem is especially consequential for fields that should vary smoothly at the regional scale.
+Figure~\ref{fig:mesh-imprinting} demonstrates the effect of using the two types of projections namely the conservative FV(1) method and the bilinear algorithm for the bathymetry field over the refined North Atlantic domain. In the configurations considered here, the \ROMS cells are typically much smaller (5x on average) than the \MPAS ocean model cells, leading to $\hRatio\approx0.2$. The conservative FV-based map projection result (center) reproduces the \MPAS Voronoi tessellation as piecewise-constant patches with sharp artificial steps, while the normalized bilinear projection (right) remains smooth. 
+%
+These discontinuities are not physical gradients. They are introduced solely by the transfer operator and can inject grid-scale noise or adjustment features aligned with the \MPAS mesh when the field is used to initialize or force a regional model. The problem is especially consequential for fields that should vary smoothly at the regional scale. Bathymetry is the sharpest illustration because it sets the \ROMS sigma-coordinate geometry: an imprint in the transferred depth field perturbs the vertical grid itself, not only the horizontal representation, so the artifact propagates into every subsequent column operation.
 
-The normalized bilinear map removes the leading-order imprint by interpolating continuously across the \MPAS mesh rather than assigning constant cell averages, at the cost of exact global conservation. For boundary and initial-condition forcing we regard this as an acceptable compromise, since \ROMS evolves its tracer inventory with its own conservative transport scheme, whereas mesh-imprinted forcing introduces artificial gradients that can persist in the interior solution. Where the transferred inventory must be preserved exactly, the map can be followed by a rescaling of the transferred field against the \MPAS inventory on the shared support, applied as a post-processing step when the map is used rather than built into the weights, which restores the global integral without reintroducing the piecewise-constant imprint, though it does not recover local conservation cell by cell.
-
-The verification metrics reported here, $\Lone$, $\Ltwo$, and $\Linf$ of Eq.~\eqref{conv:eq:norms}, assess pointwise round-trip accuracy rather than the global horizontal inventory error
-\begin{equation}
-	\left|\sum_i A^R_i\psi_i-\sum_j A^M_j\phi_j\right| .
-	\label{eq:inventory-error}
-\end{equation}
-Eq.~\eqref{eq:inventory-error} is the quantity the optional rescaling above drives to zero, and it is distinct from what the reported norms measure, and we do not report it. Vertical conservation, where needed, is provided separately by the operator of \S\ref{sec:vertical} without reintroducing horizontal imprinting.
-
-Figure~\ref{fig:mesh-imprinting} demonstrates the effect using projected bathymetry over the refined North Atlantic domain. The conservative FV-based map projection result (center) reproduces the \MPAS Voronoi tessellation as piecewise-constant patches with sharp artificial steps, while the normalized bilinear projection (right) remains smooth. Bathymetry is the sharpest illustration because it sets the \ROMS sigma-coordinate geometry: an imprint in the transferred depth field perturbs the vertical grid itself, not only the horizontal representation, so the artifact propagates into every subsequent column operation.
+The normalized bilinear map removes the leading-order imprint by interpolating continuously across the \MPAS mesh rather than assigning constant cell averages, at the cost of exact global conservation. For bathymetry, SSH and initial-condition forcing, we can regard this as an acceptable compromise to avoid imprinting effects, since \ROMS evolves its tracer components with its own conservative transport scheme, whereas mesh-imprinted forcing introduces artificial gradients that can persist in the interior solution. However, when the transferred solution must be conservative during the downscaling operation, the bilinear map can be followed by a rescaling operation (post-processing step) of the transferred field against the \MPAS fields defined on the shared support. This restores global integrals at the cost of losing exact monotonicity in high-gradient regions~\citep{mahadevan2022mira}.
 
 
 \begin{figure}[htbp]

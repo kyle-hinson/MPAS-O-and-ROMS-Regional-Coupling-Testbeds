@@ -53,19 +53,6 @@ Region & Label & $\eta_\rho\times\xi_\rho$ & Cells$^{\dagger}$ & $\hR$ (km) & $\
 The Gulf Stream \MPAS mesh is locally refined to a characteristic length of $\hM=\SI{9.48}{\kilo\metre}$, whereas the coarser Bay of Bengal \MPAS mesh gives $\hM=\SI{16.41}{\kilo\metre}$. The same labels therefore denote different absolute characteristic lengths but comparable relative refinement.
 
 
-%\paragraph{Coverage classification.}
-\label{sec:classification}
-Note that the \ROMS mesh is a bounded region embedded in the global \MPAS mesh, so every \ROMS cell is labeled based on whether it is within the convex hull of the \MPAS coverage mesh~\citep{mahadevan2020coupling}. Let $f^M_j$ and $f^R_i$ denote the covered fractions of \MPAS cell $j$ and \ROMS cell $i$, obtained from the overlap areas $A_{ij}$ of the FV supermesh. Cells with $f=1$ are \emph{interior}, and those with $0<f<1$ are only \emph{partially} covered. The interior set, written as $\mathcal{I}$, is the support on which the error norms of \S\ref{conv:sec:verification-method} are evaluated. 
-
-%Coverage-weighted conservation is a separate map property and condition:
-%\begin{equation}
-%	\sum_i A^R_i f^R_i\,\Xi_{i,k}
-%	=\sum_j A^M_j f^M_j\,\Phi_{j,k}.
-%	\label{conv:eq:bilin-conservation}
-%\end{equation}
-%Equation~\eqref{conv:eq:bilin-conservation} is weighted by the covered fractions on both sides, so it constrains only the shared support of the two meshes. It is satisfied by the conservative FV map of Eq.~\eqref{eq:fv-weight} but not by the normalized bilinear map of Eq.~\eqref{conv:eq:bilin-weight}, which is the trade discussed in \S\ref{sec:why-not-fv}.
-
-%The horizontal classification is essentially fixed across each refinement sequence, because it depends on the target footprint rather than on the target spacing. In the Gulf Stream, 10{,}158--10{,}162 source cells are interior and 534--536 are partial across r1--r4, and in the Bay of Bengal, 4249--4265 are interior and 280--320 partial. What does change with refinement is the number of target columns discarded for lack of a valid vertical reconstruction, which is reported alongside the Bay of Bengal sequence below.
 
 \subsubsection{One-dimensional axial refinement study}\label{conv:sec:axial-refinement}
 
