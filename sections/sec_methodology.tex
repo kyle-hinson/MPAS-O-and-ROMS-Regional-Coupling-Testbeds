@@ -1,5 +1,5 @@
 
-The global \MPAS model uses Centroidal Voronoi Tessellation (CVT) to generate a variable resolution mesh, which provides a smooth transition between coastal and deep-ocean resolution and avoids the abrupt refinement interfaces that degrade accuracy in long integrations. The regional \ROMS model, at typically higher spatiotemporal resolution, uses a boundary-fitted curvilinear grid, so that a regionally structured mesh is embedded within the unstructured global polygonal mesh. We will discuss the problem setup, the complication due to variation in axial coordinate systems~\citep{petersen2015evaluation}, and describe the algorithm that achieves consistent embeddings to transfer the forcing conditions accurately and efficiently.
+The global \MPAS model uses Centroidal Voronoi Tessellation (CVT) to generate a variable-resolution polygonal mesh, which provides a smooth transition between coastal and deep-ocean regions and avoids the abrupt refinement interfaces that degrade accuracy in long integrations. The regional \ROMS model, at typically higher spatiotemporal resolution, uses a boundary-fitted curvilinear grid, so that a regionally structured mesh is embedded within the unstructured global polygonal mesh. We will discuss the problem setup, the complications that arise due to variations in axial coordinate systems~\citep{petersen2015evaluation}, and describe the algorithm that achieves consistent embeddings to transfer the forcing conditions accurately and efficiently.
 
 \subsection{Problem statement and notation}\label{sec:problem}
 
@@ -7,7 +7,7 @@ The central design constraint is that the \MPAS and \ROMS
 discretizations differ in \emph{both} the horizontal tessellation
 (unstructured Voronoi vs.\ structured curvilinear) \emph{and} the
 vertical coordinate (geopotential $z^*$ vs.\ terrain-following
-$\sigma$), as illustrated in Figure~\ref{conv:fig:coord-mismatch}.
+$\sigma$) systems, as illustrated in Figure~\ref{conv:fig:coord-mismatch}.
 
 
 Let the {\MPAS} global ocean mesh cover a region of interest with
@@ -22,24 +22,7 @@ $H_i$ and free-surface elevation $\zeta_i$ through the Song--Haidvogel
 stretching transformation~\citep{song1994semi,shchepetkin2005regional}.
 A three-dimensional \MPAS field is then given by the array
 $\Phi \in \mathbb{R}^{n_M \times K_M}$ and the projected \ROMS 
-regional field is $\Psi \in \mathbb{R}^{n_R \times K_R}$. The problem at hand is to compute consistent, and conservative three-dimensional solution transfer from global \MPAS models to the \ROMS model to achieve one-way submesoscale resolving solutions.
-
-Note that a fully
-three-dimensional intersection of two such cell complexes is possible, but in general will involve $O(n_M n_R K_M K_R)$ computational complexity to decipher candidate overlaps (worst case),
-and can produce multiple sliver polyhedra whose quadratures are ill-conditioned.
-We instead exploit the fact that the \MPAS{} $z^*$ coordinate shares a
-common level indexing across all \MPAS columns: level $k$ refers to
-the same layer of the discretization everywhere, even though its
-physical thickness varies from column to column with the free surface
-and the bottom topography. A single horizontal map can therefore be
-applied slab by slab at fixed $k$, which factors the transfer into a
-horizontal remap and a one-dimensional vertical remap. The physical
-depths that the vertical remap requires are recovered per column
-afterwards, so the factorization does not assume that the levels are
-horizontally flat, and what it assumes instead is that interpolating within a
-level index is meaningful, which holds when the $z^*$ surfaces vary
-slowly relative to the horizontal stencil.
-
+regional field is $\Psi \in \mathbb{R}^{n_R \times K_R}$. The problem at hand is to compute a consistent and conservative three-dimensional solution transfer of $\Psi$ from global \MPAS models containing $\Phi$ to achieve a  multiscale solution framework with submesoscale resolution and consistent forcing conditions.
 
 \begin{figure}[htbp]
 \centering
@@ -57,22 +40,36 @@ slowly relative to the horizontal stencil.
 \label{conv:fig:coord-mismatch}
 \end{figure}
 
-Throughout the manuscript \MPAS is the source of the transfer and \ROMS the target, and we name the two meshes directly rather than by that role. \MPAS cell indices carry the subscript $j$ and \ROMS cells the index $i$, while $k$ and $\ell$ index \MPAS and \ROMS vertical levels respectively. Uppercase $\Phi,\Xi,\Psi$ denote whole
+Note that a fully
+three-dimensional intersection to compute a supermesh~\citep{ullrich2015arbitrary} of two such cell complexes can be computed, but in general will involve $O(n_M K_M n_R K_R)$ computational complexity to decipher candidate overlaps (worst case),
+and can produce multiple sliver polyhedra whose quadratures may be ill-conditioned.
+We instead exploit the fact that the \MPAS{} $\zmpas$ coordinate shares a
+common level indexing across all \MPAS columns: level $k$ refers to
+the same layer of the discretization everywhere, even though its
+physical thickness varies from column to column with the free surface, the bottom topography and axial masking. A single horizontal map can therefore be
+applied slab by slab at fixed $k$, which factors the volumetric transfer into a
+horizontal remap and a one-dimensional vertical remap. The physical
+depths that the vertical remap requires are recovered per column
+afterwards, and so the factorization does not assume that the levels are
+horizontally flat. Instead, we assume that interpolating within a
+level index is meaningful, which holds when the physical $\zmpas$ surfaces vary
+slowly relative to the horizontal stencil.
+
+Throughout the manuscript, the \MPAS model is referred to as the \em{source} and \ROMS as the \em{target}. However, note that the algorithmic design is agnostic to the structured or unstructured nature of the underlying topology. In terms of notation, we also use the subscript $j$ for \MPAS cell indices, and $i$ for \ROMS cells, while $k$ and $\ell$ index \MPAS and \ROMS vertical levels respectively. Uppercase $\Phi,\Xi,\Psi$ denote whole
 three-dimensional arrays, and the corresponding lowercase $\phi,\psi$
 denote a single horizontal slab extracted at a fixed level, so that
 $\phi_j=\Phi_{j,k}$ for the level $k$ under discussion. Cell areas carry the mesh as a superscript: $A^M_j$ is the
 area of \MPAS cell $j$, $A^R_i$ that of \ROMS cell $i$, and $A_{ij}$
 the area of their intersection. All geometry is treated on the unit
-sphere, areas are spherical areas computed by L'Huilier's excess
-formula, and horizontal weights are area-based so that the operators
-are independent of the absolute mesh radius.
+sphere, and spherical areas on the manifold are computed by \emph{L'Huilier}'s excess
+formula on the unit sphere, scaled appropriately by the \MPAS Earth radius.
 
 % Methods section.
 \subsection{Separable volumetric remapping}\label{conv:sec:methods}
 
 Writing $\Xi$ for the intermediate field that results from transferring
 every \MPAS level horizontally, and $\mathcal{V}$ for the column-wise
-vertical remap, the composed transfer is
+vertical remap, the composed transfer operation is
 \begin{equation}
   \Xi_{i,k}=\sum_j W_{ij}\Phi_{j,k},\qquad \Psi=\mathcal{V}(\Xi),
   \label{conv:eq:tensor}
@@ -82,7 +79,7 @@ where the horizontal map $W$ is reused unchanged at every \MPAS level
 and $\mathcal{V}$ acts independently on each \ROMS column. This
 prism-based 2D$\times$1D construction avoids sliver polyhedra while
 retaining the column geometry that the vertical remap requires. The two
-factors are developed in turn in \S\ref{sec:horizontal} and
+factors are in turn developed in \S \ref{sec:horizontal} and
 \S\ref{sec:vertical}. A schematic of the volumetric remapping algorithm is shown in Figure~\ref{fig:remap_methods}.
 
 
@@ -96,7 +93,8 @@ factors are developed in turn in \S\ref{sec:horizontal} and
 
 \subsection{Horizontal remap as a sparse linear map}\label{sec:horizontal}
 
-Several choices are available for projecting a horizontal slab from \MPAS onto an embedded \ROMS domain. The standard one is the $L_2$ minimization that preserves both global and local integrals and is therefore exactly conservative. In the coarse-to-fine regime considered here it also imprints the \MPAS tessellation on the \ROMS field, which is why we do not use it for tracer transfer, as \S\ref{sec:why-not-fv} develops in detail and Fig.~\ref{fig:mesh-imprinting} demonstrates. We first set out both constructions.
+Several choices are available for computing projections or interpolants from a global spherical manifold mesh like \MPAS onto an embedded \ROMS regional domain. The standard approach is the use of $L_2$ minimization~\citep{zienwincsk} that preserves both global and local integrals and is therefore exactly conservative. The low order variant of the minimizer is also truly property-preserving (monotone). %In the coarse-to-fine regime considered here it also imprints the \MPAS tessellation on the \ROMS field, which is why we do not use it for tracer transfer, as \S\ref{sec:why-not-fv} develops in detail and Fig.~\ref{fig:mesh-imprinting} demonstrates. We first set out both constructions.
+Alternatively, one could also utilize variations of delaunay-based natural neighbor or bilinear interpolants, while preserving the integrals as designed in implementations like TempestRemap~\citep{ullrich2015arbitrary}. The implications of some of these choices will be further explored.
 
 For a fixed \MPAS depth level $k$, the horizontal factor $W$ of
 Eq.~\eqref{conv:eq:tensor} acts on the level slab
@@ -106,11 +104,10 @@ $\phi=\Phi_{:,k} \in \mathbb{R}^{n_M}$ as the sparse linear map
 	\qquad W \in \mathbb{R}^{n_R \times n_M},
 	\label{eq:linear-map}
 \end{equation}
-in the linear-maps-for-remapping sense
-of~\citet{ullrich2015arbitrary,ullrich2016tempestremap}. Two
-constructions of the weights in Eq.~\eqref{eq:linear-map} are
-considered below, and they differ in whether conservation or
-smoothness is enforced.
+as defined by~\citet{ullrich2015arbitrary,ullrich2016tempestremap}. Two
+specific constructions of the weights in Eq.~\eqref{eq:linear-map} are
+considered below, and they primarily differ in whether strict conservation or
+smoothness is enforced for problem at hand.
 
 \paragraph{Conservative finite-volume (FV) map.}
 The first-order conservative finite-volume linear-map ~\citep{jones1999scrip} is computed based on the full supermesh in order to account for the contributions from all partial subcell geometry neighbors from the \MPAS mesh overlapping the \ROMS elements. This sets the
