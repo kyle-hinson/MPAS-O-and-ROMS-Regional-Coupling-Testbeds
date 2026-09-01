@@ -91,10 +91,10 @@ factors are in turn developed in \S \ref{sec:horizontal} and
 \end{figure}
 
 
-\subsection{Horizontal remap as a sparse linear map}\label{sec:horizontal}
+\subsection{Horizontal remap as a sparse linear operator}\label{sec:horizontal}
 
 Several choices are available for computing projections or interpolants from a global spherical manifold mesh like \MPAS onto an embedded \ROMS regional domain. The standard approach is the use of $L_2$ minimization~\citep{dukowicz1987accurate} that preserves both global and local integrals and is therefore exactly conservative. The low order variant of the minimizer is also truly property-preserving (monotone). %In the coarse-to-fine regime considered here it also imprints the \MPAS tessellation on the \ROMS field, which is why we do not use it for tracer transfer, as \S\ref{sec:why-not-fv} develops in detail and Fig.~\ref{fig:mesh-imprinting} demonstrates. We first set out both constructions.
-Alternatively, one could also utilize variations of delaunay-based natural neighbor or bilinear interpolants, while preserving the integrals as designed in implementations like TempestRemap~\citep{ullrich2015arbitrary}. The implications of some of these choices will be further explored.
+Alternatively, one could also utilize variations of delaunay-based natural neighbor or bilinear interpolants, while preserving the integrals as designed in implementations like SCRIP~\citep{jones1999scrip}, ESMF~\citep{hill2004esmf} and TempestRemap~\citep{ullrich2015arbitrary}. The implications of some of these choices will be further explored.
 
 For a fixed \MPAS depth level $k$, the horizontal factor $W$ of
 Eq.~\eqref{conv:eq:tensor} acts on the level slab
@@ -145,10 +145,10 @@ $\sum_i A^R_i \psi_i = \sum_j A^M_j \phi_j$ is exact for \MPAS cells
 interior to the \ROMS boundary and needs to include a fractional weighting (computed from supermesh construction) for \MPAS cells that only partially overlaps with \ROMS domain. Hence computing the conservation of fluxes and states in the \ROMS domain boundary strictly requires topological intersections, without which we
 can only enforce weak conservation over $\mathcal{I}$. 
 
-The map is first-order accurate and, being
+The conservative FV map is first-order accurate and, being
 a convex average of the \MPAS values ($W^{\mathrm{FV}}_{ij}\ge 0$,
 $\sum_j W^{\mathrm{FV}}_{ij}=1$ on fully-covered cells), it is
-property-preserving on those cells: the transferred values are bounded
+property-preserving on those cells i.e., the transferred values are bounded
 by the \MPAS value range in the covering mesh.
 
 \paragraph{Normalized bilinear map.}
@@ -209,7 +209,7 @@ The normalized bilinear map removes the leading-order imprint by interpolating c
 	\label{fig:mesh-imprinting}
 \end{figure}
 
-Higher-order quasi-interpolants offer a third route. Multilevel B-spline approximation (MBA) builds a smooth field from a hierarchy of control lattices~\citep{lee1997mba}, while Generalized Moving Least-Squares and Weighted Essentially Non-Oscillatory reconstructions instead fit local stencils, the latter with nonlinear weights that suppress oscillations near discontinuities~\citep{mahadevan2022mira}. Each would need a normalization step to recover conservation, and limiters to recover monotonicity. We have not pursued these here.
+Higher-order quasi-interpolants offer a third route. Multilevel B-spline approximation (MBA) builds a smooth field from a hierarchy of control lattices~\citep{lee1997mba}, while Generalized Moving Least-Squares and Weighted Essentially Non-Oscillatory reconstructions instead fit local stencils, the latter with nonlinear weights that suppress oscillations near discontinuities~\citep{mahadevan2022mira}. Each would need a normalization step to recover conservation, and limiters to recover monotonicity. We have not pursued these extensions in the current study.
 
 \subsection{Vertical remap of each column}\label{sec:vertical}
 

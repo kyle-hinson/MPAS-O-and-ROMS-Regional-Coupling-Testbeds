@@ -132,17 +132,19 @@ Relaxing the conservation constraint admits alternatives, and this choice is an 
 %Figure~\ref{conv:fig:omp-scaling} shows a measured speedup of $34.5\times$ at $N_z=100$ and $33.6\times$ at $N_z=50$, corresponding to an average of 53\% strong-scaling parallel efficiency at 64 threads, while the two vertical-resolution curves nearly overlap. The resuls for the run are averaged over 10 executions, and showcase the net volumetric remapping speedup rather than separately quantifying the cost of the horizontal and vertical phases of the remap.
 
 \subsection{Bathymetry treatment and regional applications}\label{conv:sec:bathysmooth}
-The projected bathymetry can generate sigma-coordinate pressure-gradient errors over steep slopes~\citep{haney1991pressure,mellor1994pressure}. We condition it with a one-ring log-depth averaging smoother. Writing $H_i$ for the depth of \ROMS cell $i$, $q_i=\log H_i$ for its logarithm, $\mathcal{A}(i)$ for the set of edge-neighbours of that cell, and $m$ for the iteration counter, each sweep replaces the log-depth of a cell by the mean over its one-ring neighbourhood,
+When the projected bathymetry in the \ROMS model changes rapidly in adjacent cells, the model can generate sigma-coordinate pressure-gradient errors over steep slopes~\citep{haney1991pressure,mellor1994pressure}. We condition it with a one-ring \emph{log-depth} averaging smoother. Writing $H_i$ for the depth (bathymetry) of \ROMS cell $i$, $q_i=\log H_i$ for its logarithm, $\mathcal{A}(i)$ for the set of edge-neighbours of that cell, and $m$ for the iteration counter, each sweep replaces the \emph{log-depth} of a cell by the mean over its one-ring neighbourhood, similar to a Laplacian smoother in the context of mesh optimization workflows. The iterative sequence can be wrriten as 
+%
 \begin{equation}
  q_i^{(m+1)}=\frac{1}{|\mathcal{A}(i)|}\sum_{i'\in\mathcal{A}(i)}q_{i'}^{(m)},\qquad H_i^{(m+1)}=\exp q_i^{(m+1)},
  \label{conv:eq:onering}
 \end{equation}
-with clipping to the \MPAS range. Operating on $\log H$ rather than $H$ makes the smoother act on relative rather than absolute depth differences, so a given number of sweeps has comparable effect on the shelf and in the deep ocean. Land cells are excluded from the neighbourhood sums. Smoothing by Eq.~\eqref{conv:eq:onering} stops once the steepest remaining neighbour contrast satisfies
+with clipping to the \MPAS range. Operating on $\log H$ rather than $H$ makes the smoother act on relative rather than absolute depth differences, which results in the sweeps having a comparable effect on the shelf and in the deep ocean regions. Land cells are typically excluded from these neighbourhood sums and the land masks are preserved throughout the process. Smoothing by Eq.~\eqref{conv:eq:onering} stops once the steepest remaining neighbour contrast satisfies
 \begin{equation}
- r_{\max}^{(m)}=\max_i\max_{i'\in\mathcal{A}(i)}\frac{q_i^{(m)}-q_{i'}^{(m)}}{q_i^{(m)}+q_{i'}^{(m)}}<0.05,
+ r_{\max}^{(m)}=\max_i\max_{i'\in\mathcal{A}(i)}\frac{q_i^{(m)}-q_{i'}^{(m)}}{q_i^{(m)}+q_{i'}^{(m)}}<0.05.
  \label{conv:eq:slope-stop}
 \end{equation}
-which is the sole termination condition, with no cap on the iteration count. Evaluated on the same log-depths, this test plays the role of the $r$-factor conventionally used to condition terrain-following grids~\citep{sikiric2009smoothing}. The resulting bathymetry is shown in Fig.~\ref{conv:fig:smoothing}.
+Evaluated on the same log-depths, this test plays the role of the $r$-factor conventionally used to condition terrain-following grids~\citep{sikiric2009smoothing}. The results from applying the bathymetry smoothing and its effect on the stability of the \ROMS model simulation is described in Fig.~\ref{conv:fig:smoothing}.
+\Review{Kyle: Confirm whether the BoB stability issues occurred without smoothing in the newer runs. I do not remember if the figure is from an older experiment}
 
 \begin{figure}[htbp]
 \centering
@@ -152,6 +154,17 @@ which is the sole termination condition, with no cap on the iteration count. Eva
 \end{figure}
 \FloatBarrier
 
-Smoothing the logarithm of the bathymetry changes the round-trip errors by less than 5\% and was sufficient to stabilize the Bay of Bengal integration. That domain also required vertical smoothing of the remapped scalar profiles, which removed a warm anomaly between 100 and 200 m near masked coastlines. The two treatments act on different quantities and we report their effects separately. Elsewhere the regional applications use the projected \MPAS geometry, except where coastal or estuarine topography forces us to blend it with the native \ROMS bathymetry and to retain the \ROMS land mask. Chesapeake Bay is the clearest example: the \MPAS mesh cannot represent the estuarine geometry at all, so the boundary and initial fields there must be prescribed or blended, and the blending weights we used are not specified precisely enough for the case to be reproduced.
+Limiting the logarithm of the bathymetry changes in neighborhoods to be less than 5\% kept the \ROMS simulations stable in the Bay of Bengal domain. This smoothing process bounded the maximal remapping error and its propagation during simulation, which removed a warm temperature anomaly between 100m and 200m near masked coastlines in the unsmoothed case. This procedure is vital in regional applications where coastal or estuarine topography is inadequately resolved by the \MPAS global model, which forces us to blend with the native \ROMS bathymetry and to retain the \ROMS land mask as needed. 
+
+The Chesapeake Bay domain is the clearest example showcasing this issue. Here, the \MPAS mesh cannot represent the estuarine geometry at all, and so the boundary and initial fields there must be prescribed or blended.
+\TODOc{Kyle: Talk more about bathymetry blending, smoothing, initial/forcing condition extrapolation etc for Chesapeake Bay case}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{Figures/saltCompare_ChesBay_frames_0055.png}
+\caption{Chesapeake Bay domain showing evolution of salinity at day=55.}
+\label{conv:fig:chesapeake-bay-salinity}
+\end{figure}
+\FloatBarrier
 
 \input{sections/sec_results_regional}
