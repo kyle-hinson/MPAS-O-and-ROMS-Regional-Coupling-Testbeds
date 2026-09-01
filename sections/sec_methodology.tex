@@ -17,7 +17,7 @@ thicknesses respond to the free surface but which are indexed
 identically in every column. Let the \ROMS{}
 grid have $n_R$ horizontal cells, each with a column of
 $K_R$ terrain-following (sigma) levels whose absolute depths
-$\{z_\ell^{*(i)}\}_{\ell=1}^{K_R}$ depend on the local bathymetry
+$\{z_\ell^{(i)}\}_{\ell=1}^{K_R}$ depend on the local bathymetry
 $H_i$ and free-surface elevation $\zeta_i$ through the Song--Haidvogel
 stretching transformation~\citep{song1994semi,shchepetkin2005regional}.
 A three-dimensional \MPAS field is then given by the array
@@ -55,7 +55,7 @@ horizontally flat. Instead, we assume that interpolating within a
 level index is meaningful, which holds when the physical $\zmpas$ surfaces vary
 slowly relative to the horizontal stencil.
 
-Throughout the manuscript, the \MPAS model is referred to as the \em{source} and \ROMS as the \em{target}. However, note that the algorithmic design is agnostic to the structured or unstructured nature of the underlying topology. In terms of notation, we also use the subscript $j$ for \MPAS cell indices, and $i$ for \ROMS cells, while $k$ and $\ell$ index \MPAS and \ROMS vertical levels respectively. Uppercase $\Phi,\Xi,\Psi$ denote whole
+Throughout the manuscript, the \MPAS model is referred to as the \emph{source} and \ROMS as the \emph{target}. However, note that the algorithmic design is agnostic to the structured or unstructured nature of the underlying topology. In terms of notation, we also use the subscript $j$ for \MPAS cell indices, and $i$ for \ROMS cells, while $k$ and $\ell$ index \MPAS and \ROMS vertical levels respectively. Uppercase $\Phi,\Xi,\Psi$ denote whole
 three-dimensional arrays, and the corresponding lowercase $\phi,\psi$
 denote a single horizontal slab extracted at a fixed level, so that
 $\phi_j=\Phi_{j,k}$ for the level $k$ under discussion. Cell areas carry the mesh as a superscript: $A^M_j$ is the
