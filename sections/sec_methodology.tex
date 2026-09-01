@@ -168,12 +168,12 @@ conservative by construction, since its column sums are not area ratios as in Eq
 
 \subsection{Issues with conservative FV map for tracers}\label{sec:why-not-fv}
 
-The conservative finite-volume (FV) map in \eqref{eq:fv-weight} is the lowest-order case of the conservative \(L_2\)-minimization framework used for general mesh remapping \citep{ullrich2015arbitrary,ullrich2016tempestremap}. Given compatible bases on the two meshes, the transferred field minimizes the overlap-domain error
+The monotone, conservative finite-volume (FV) map in \eqref{eq:fv-weight} is the lowest-order case of the \(L_2\)-minimization framework used for general mesh remapping \citep{ullrich2015arbitrary,ullrich2016tempestremap}. Given compatible bases on the two meshes, the transferred field minimizes the error in the integral of the field defined on the overlapping domain between a source and target mesh topology
 \begin{equation}
-	\int_{\Omega}(f-g)^2\,\mathrm{d}\Omega ,
+	\int_{\Omega}(\phi-\psi)^2\,\mathrm{d}\Omega ,
 	\label{eq:l2-min}
 \end{equation}
-leading to a discrete system $W_{S\rightarrow T}G=F$, where $G$ and $F$ are the mass matrices of the \ROMS and \MPAS bases. Minimizing Eq.~\eqref{eq:l2-min} over the overlap domain is what makes the resulting map conservative, and at lowest order it recovers the area-ratio weights of Eq.~\eqref{eq:fv-weight}. Higher-order conservative, monotone, and smooth alternatives are available \citep{lauritzen2008monotone,lee1997mba}, but here we focus on the first-order FV map and the normalized bilinear map in \eqref{conv:eq:bilin-weight}, which capture the main trade-off relevant to \MPAS--\ROMS downscaling experiments.
+leading to a discrete system $\mathcal{W}\Phi=\Psi$, where $\mathcal{W}$ is the mass matrix over the \ROMS and \MPAS bases. Minimizing Eq.~\eqref{eq:l2-min} over the overlap domain is what makes the resulting map conservative, and at lowest order it recovers the area-ratio weights of Eq.~\eqref{eq:fv-weight}. Higher-order conservative, monotone, and smooth alternatives are available \citep{lauritzen2008monotone,lee1997mba}, but given the strong gradients in the 3D ocean states, we focus here only on the first-order FV map and the normalized bilinear map in \eqref{conv:eq:bilin-weight}, which capture the main trade-off relevant to \MPAS--\ROMS downscaling experiments.
 %
 %During the downscaling computations and verification procedure, we retain the FV map for coverage classification, since its overlap area weights provide the covered fraction of each cell directly. This factor is not used for tracer soltion transfer in regional coupled runs however, to avoid mesh imprinting artifacts in the remapped fields.
 
