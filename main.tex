@@ -19,7 +19,7 @@
 \usepackage[hidelinks]{hyperref}
 
 \usepackage{todonotes}
-%\usepackage[disable]{todonotes}
+% \usepackage[disable]{todonotes}
 \definecolor{todoblue}{RGB}{30,90,220}
 \definecolor{reviewred}{RGB}{200,30,30}
 \newcommand{\TODOc}[1]{\todo[inline,color=todoblue!18,bordercolor=todoblue,linecolor=todoblue]{\textbf{\textcolor{todoblue}{TODO:}} #1}}
@@ -55,6 +55,7 @@
 \newcommand{\zmpas}{z^{*}}
 \newcommand{\hRatio}{\varrho}
 
+%
 \title{Enhanced Submesoscale Feature Resolution in Multiscale Ocean Simulations}
 \author[1]{Authors**}
 \affil[1]{Institutions}
@@ -63,6 +64,7 @@
 \maketitle
 \TODOc{Author metadata: Replace placeholder for authors and institution fields.}
 %
+
 %
 \begin{abstract}
 Global ocean models must limit horizontal resolution, even when using regional refinement, to make climate-length integrations computationally tractable. Regional downscaling addresses this constraint by representing selected processes, in a limited region, at finer resolution within a global modeling framework, but it requires the consistent transfer of three-dimensional state fields between global and regional model components. Differences in horizontal mesh topology and characteristic scales, together with differences in vertical coordinate systems, complicate the construction of a verifiably accurate coupler. We present a scalable global \MPAS$\rightarrow$\ROMS regional model tensor-product transfer for multiscale boundary conditions that applies a consistent, property-preserving horizontal map independently at each vertical level over the common mesh support, followed by a conservative vertical remap that preserves column integrals of salinity, temperature, and velocity fields. Tests using a smooth analytic field and daily-mean ocean states show decreasing error as the \ROMS mesh is refined, followed by error saturation when \MPAS to \ROMS characteristic lengths are about $0.2$. These convergence results identify regional grid resolutions that meet a prescribed accuracy target at lower computational cost. We assess the resulting regional fields in deep-ocean North Atlantic and Gulf Stream domains and in coastal and estuarine applications in the Bay of Bengal and Chesapeake Bay, where the downscaled fields represent variability at scales finer than those resolved by the global model, including submesoscale structure where supported by the regional mesh resolution and forcing. Together, these results demonstrate the feasibility of the proposed transfer method for multiscale ocean downscaling across open-ocean, coastal, and estuarine settings with possible extensions to both online one-way and two-way setups.
@@ -77,42 +79,44 @@ Global ocean models must limit horizontal resolution, even when using regional r
 \clearpage
 
 %
+
+\FloatBarrier
 \section{Introduction}
 \input{sections/sec_introduction}
 %
+
+\FloatBarrier
 \section{Methodology}\label{sec:methods}
 \input{sections/sec_methodology}
 %
+
+\FloatBarrier
 \section{Results}\label{sec:results}
 \input{sections/sec_results_verification}
 %
+
 \FloatBarrier
 \section{Discussion}\label{sec:discussion}
-The transfer improves over the coarse portion of the tested sequences, but its composite round-trip error saturates for real fields on the finest pair. For the controlled analytic field, refining the \ROMS mesh while holding \MPAS fixed shows that the \ROMS characteristic length is not what limits the result, while cancellation between the forward and reverse legs makes the round trip a different quantity from the one-way forcing error. Which stage sets the floor remains unattributed, since we did not exercise the horizontal and vertical operators separately. Requiring the vertical interpolant to conserve layer integrals makes the composed tensor-product transfer first order overall, which is consistent with the measured decrease, though confirming the rate by fitting would require a longer sequence than the four grids used here.
-
-The regional applications show finer-scale relative-vorticity structure and domain-dependent kinetic energy changes across open-ocean, boundary current, coastal, and estuarine settings. The four configurations sit at $\hRatio\approx0.21$ (North Atlantic), $0.24$ (Gulf Stream), $0.35$ (Bay of Bengal), and $0.06$ (Chesapeake Bay), so three of them lie near the flattening point identified in \S\ref{conv:sec:conv} while Chesapeake Bay is far below it, refined for reasons of estuarine geometry rather than transfer accuracy. As a result, the Chesapeake Bay case utilizes blended bathymetry information to produce better fidelity in regions where \MPAS can only provide sparse data.
-
-Several limitations qualify some of these presented results. The \MPAS characteristic length is fixed and varies in space, while the \ROMS evaluation support changes as that mesh is refined (depending on the interior set, $\mathcal{I}$). Additionally, velocities are transferred between \MPAS and \ROMS models as componentwise scalars, and remain cell centered, without rotation to the \ROMS curvilinear basis, interpolation to staggered points, or any constraint on the discrete divergence. Neither finer \ROMS meshes nor higher-order interpolation schemes can remove the errors imposed by the coarse \MPAS representation in regions that require higher fidelity for better boundary forcing, definition of land masks, or estuarine structures.
-
-\TODOc{add more relevant discussions from real world one-way runs; can reference videos of tracer evolution and discuss the chesapeake case and how that was achieved. Complications in getting that to work and why this augments global models.}
-
+\input{sections/sec_discussions}
 %
+
+\FloatBarrier
 \section{Summary and future directions}\label{sec:conclusions}
-We presented a separable volumetric transfer between unlike horizontal meshes and vertical coordinates, combining a consistent, property-preserving horizontal remap with a column-wise conservative axial projection that reproduces \ROMS layer integrals. Constraining the vertical operator to conserve layer integrals makes the composed scheme first order overall, and the one-dimensional study shows what that costs, since a point-value interpolant that reproduces the profile instead converges between second and third order on smooth data but forfeits conservation entirely. That study also shows the terrain-following coordinate itself is not the limitation, because repeating it on a uniform vertical mesh changes neither rate appreciably.
+\input{sections/sec_conclusions}
 
-For practitioners the operational result is an \ROMS characteristic length near $\hRatio\approx0.2$ as a starting point, confirmed by a short refinement sequence in each new domain rather than assumed. The four applications also show that the transfer alone does not make a regional configuration run: the Bay of Bengal required bathymetry smoothing, and Chesapeake Bay required native geometry together with blended estuarine fields.
-
-Two checks would strengthen the verification most directly. A common-support comparison for the real fields on the finest grid pair would resolve whether the apparent saturation is genuine, and exercising the column remapper alone on synthetic vertical domains, where the \ROMS depth range is embedded in, coincides with, or extends beyond the \MPAS range, would establish the order of the vertical operator without the confounding effects of the horizontal map and the changing support. Beyond those, forward-only tests for real tracers against surrogate references, sensitivity studies spanning several \MPAS meshes, and repeated timings would all help. With those checks in hand, the transfer can be evaluated for online one-way exchange.
-
-The natural next step is two-way coupling, and the machinery for it is already in place. Verifying the transfer by round trip required assembling the reverse operators $W_{R\to M}$ and $\mathcal{V}_{R\to M}$ alongside the forward ones, so the same tensor-product construction can be driven with \ROMS as the source and \MPAS as the target, upscaling the finer regional structure back onto the global mesh. What the round trip does not do is validate that reverse leg on its own, because errors incurred on the forward leg can be undone on the return, and the composition is therefore a weaker test than either direction taken separately. The upscaling direction also inverts the argument that motivated our choice of horizontal map. Fine-to-coarse transfer aggregates many \ROMS cells into one \MPAS cell rather than interpolating one coarse value onto many fine ones, so mesh imprinting is not the failure mode and conservation of the transferred inventory becomes the property that matters, which points back toward the conservative finite-volume map of \S\ref{sec:horizontal} rather than the bilinear one used here. Establishing the reverse direction on its own terms, with the tracer-inventory and land--estuary consistency tests that two-way exchange requires, is where we intend to take this next.
-%
+\FloatBarrier
 \section*{Data and Code Availability}
 \TODOc{Availability: Replace with complete data and method access information.}
 %
+
+\FloatBarrier
 \section*{Acknowledgments}
 \TODOc{Acknowledgments: Replace with funding and computing acknowledgments.}
 %
+
 \clearpage
 \bibliographystyle{ametsocV6}
 \bibliography{references}
+%%
+
 \end{document}

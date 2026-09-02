@@ -92,6 +92,11 @@ Figures~\ref{conv:fig:gs-convergence} and~\ref{conv:fig:bob-convergence} show th
 \label{conv:fig:gs-convergence}
 \end{figure}
 
+Errors decrease over the coarse portion of both sequences, but the real-field errors do not show consistent changes beyond r3 refinments with $\varrho\approx0.25$ i.e., roundtrip error plateaus.
+The error convergence sequences suggest that $\hRatio\approx0.2$, roughly a five-fold refinement of the \ROMS mesh, is a useful starting point when choosing the \ROMS mesh reolution, and targets at or below $\hRatio\approx0.1$ should be justified by a refinement study for domain of interest when balancing accuracy and computational efficiency. The same value emerges in both the open-ocean and  coastal domain cases, which validates the choice of $\varrho$ as a good starting guess. However, our recommendation is to always perform a roundtrip convergence study to confirm the optimal refinement ratio for realistic simulation campaigns for each new domain.
+
+More generally, for a fixed global \MPAS mesh, a short convergence sequence like this is practical to identify the characteristic length beyond which further refinement of the \ROMS mesh ceases to be worthwhile. As in any multiscale configuration, the lateral boundary conditions supplied from \MPAS carry coarse scale errors that cannot be resolved by \ROMS, or by the forcing itself, as these do not diminish as the \ROMS mesh is refined, so that relative to $\hRatio$ the errors remain $\mathcal{O}(1)$. Because that floor is set by the \MPAS state rather than by the transfer, refining past the point where the sequence flattens buys little in the fidelity of the transferred fields, though we have not measured what it does to the regional solution that evolves from them. The cost, meanwhile, continues to grow: the number of \ROMS cells scales as $\hRatio^{-2}$ and a CFL-limited time step shrinks in proportion to the characteristic length, so integrating a fixed period becomes roughly $\hRatio^{-3}$ more expensive. Choosing the \ROMS characteristic length near the flattening point therefore captures most of the accuracy that the \MPAS state makes available, at a small fraction of the cost of the finest grids tested. We did not run targets below $\hRatio\approx0.08$, so this is an argument about the range examined rather than an asymptotic claim.
+
 %% BoB convergence
 \begin{figure}[htbp]
 \centering
@@ -101,12 +106,7 @@ Figures~\ref{conv:fig:gs-convergence} and~\ref{conv:fig:bob-convergence} show th
 \end{figure}
 \FloatBarrier
 
-Errors decrease over the coarse portion of both sequences, but the real-field errors do not show consistent changes beyond r3 refinments with $\varrho\approx0.25$ i.e., roundtrip error plateaus.
-The error convergence sequences suggest that $\hRatio\approx0.2$, roughly a five-fold refinement of the \ROMS mesh, is a useful starting point when choosing the \ROMS mesh reolution, and targets at or below $\hRatio\approx0.1$ should be justified by a refinement study for domain of interest when balancing accuracy and computational efficiency. The same value emerges in both the open-ocean and  coastal domain cases, which validates the choice of $\varrho$ as a good starting guess. However, our recommendation is to always perform a roundtrip convergence study to confirm the optimal refinement ratio for realistic simulation campaigns for each new domain.
-
-More generally, for a fixed global \MPAS mesh, a short convergence sequence like this is practical to identify the characteristic length beyond which further refinement of the \ROMS mesh ceases to be worthwhile. As in any multiscale configuration, the lateral boundary conditions supplied from \MPAS carry coarse scale errors that cannot be resolved by \ROMS, or by the forcing itself, as these do not diminish as the \ROMS mesh is refined, so that relative to $\hRatio$ the errors remain $\mathcal{O}(1)$. Because that floor is set by the \MPAS state rather than by the transfer, refining past the point where the sequence flattens buys little in the fidelity of the transferred fields, though we have not measured what it does to the regional solution that evolves from them. The cost, meanwhile, continues to grow: the number of \ROMS cells scales as $\hRatio^{-2}$ and a CFL-limited time step shrinks in proportion to the characteristic length, so integrating a fixed period becomes roughly $\hRatio^{-3}$ more expensive. Choosing the \ROMS characteristic length near the flattening point therefore captures most of the accuracy that the \MPAS state makes available, at a small fraction of the cost of the finest grids tested. We did not run targets below $\hRatio\approx0.08$, so this is an argument about the range examined rather than an asymptotic claim.
-
-The convergence order of the composed scheme is determined by the rate of the horizontal and vertical components. Imposing conservation on the vertical operator such that each \ROMS layer integral in the reconstructed profile matches the contributions from the \MPAS geopotential coordinate topology, the vertical projection operator mimics a traditional $L_2$ minimization in one dimension, resulting in a first order approximation in the layer thickness. Since the tensor product in Eq.~\eqref{conv:eq:tensor} is no more accurate than its least accurate factor, the composed three-dimensional transfer is first order overall, irrespective of the formal accuracy of the horizontal map. The measured decrease over the convergent portion of both sequences is consistent with this expectation, although four grids are too few to fit an asymptotic rate.
+The convergence order of the composed 3D algirthm is determined by the rate of the horizontal and vertical components. Imposing conservation on the vertical operator such that each \ROMS layer integral in the reconstructed profile matches the contributions from the \MPAS geopotential coordinate topology, the vertical projection operator mimics a traditional $L_2$ minimization in one dimension, resulting in a first order approximation in the layer thickness. Since the tensor product in Eq.~\eqref{conv:eq:tensor} is no more accurate than its least accurate factor, the composed three-dimensional transfer is first order overall, irrespective of the formal accuracy of the horizontal map. The measured decrease over the convergent portion of both sequences is consistent with this expectation, although four grids are too few to fit an asymptotic rate.
 
 Relaxing the conservation constraint admits alternatives, and this choice is an application decision rather than a purely numerical one. A quasi-interpolant that reproduces the profile rather than its layer integrals reaches higher order on smooth fields, as the one-dimensional comparison of \S\ref{conv:sec:axial-refinement} shows, but forfeits exact conservation, monotonicity, or both depending on how it is constructed. Higher order bought by violating monotonicity can introduce spurious extrema in sharp features such as the thermocline, and a scheme that sacrifices conservation is poorly suited to long integrations where tracer inventories must be maintained. For boundary and initial-condition forcing of a regional model that carries its own conservative transport, either trade may be defensible, and we chose conservation.
 %
@@ -117,19 +117,23 @@ Relaxing the conservation constraint admits alternatives, and this choice is an 
 %Errors grow with depth, and the salinity floors in the two regions differ by about two orders of magnitude. We cannot attribute that gap: the two regions differ in source resolution, in coastal gradient strength, and in the extent of their land masks, and the round-trip metric does not separate these. The persistent $L_\infty$ salinity errors are localized near the surface and near coastlines, and their location shifts with refinement, which is consistent with under-resolved near-surface stratification but does not establish it.
 
 
-%\FloatBarrier
-%\subsection{Performance}\label{conv:sec:performance}
-%The benchmark projects four fields from a source mesh of $5.7\times10^6$ polyhedra to a target mesh of $8\times10^6$ elements on one Perlmutter CPU node, using 1--64 OpenMP threads and $N_z=50$ and 100.
-%
-%\begin{figure}[htbp]
-%\centering
-%\includegraphics[width=0.7\textwidth]{Figures/conv_omp_scaling_perlmutter.png}
-%\caption{Strong scaling of the four-field projection at $N_z=50$ and $N_z=100$.}
-%\label{conv:fig:omp-scaling}
-%\end{figure}
-%\FloatBarrier
-%
-%Figure~\ref{conv:fig:omp-scaling} shows a measured speedup of $34.5\times$ at $N_z=100$ and $33.6\times$ at $N_z=50$, corresponding to an average of 53\% strong-scaling parallel efficiency at 64 threads, while the two vertical-resolution curves nearly overlap. The resuls for the run are averaged over 10 executions, and showcase the net volumetric remapping speedup rather than separately quantifying the cost of the horizontal and vertical phases of the remap.
+\FloatBarrier
+\subsection{Performance}\label{conv:sec:performance}
+The benchmark projects four fields from a source mesh of $5.7\times10^6$ polyhedra to a target mesh of $8\times10^6$ elements on one Perlmutter CPU node, using 1--64 OpenMP threads and $N_z=50$ and 100.
+
+\TODOc{Rerun more experiments to determine cost for refined GS and BoB cases}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{Figures/conv_omp_scaling_perlmutter.png}
+\caption{Strong scaling of the four-field projection at $N_z=50$ and $N_z=100$.}
+\label{conv:fig:omp-scaling}
+\end{figure}
+\FloatBarrier
+
+\TODOc{Also need to modify code to eliminate all I/O etc in timing}
+
+Figure~\ref{conv:fig:omp-scaling} shows a measured speedup of $34.5\times$ at $N_z=100$ and $33.6\times$ at $N_z=50$, corresponding to an average of 53\% strong-scaling parallel efficiency at 64 threads, while the two vertical-resolution curves nearly overlap. The resuls for the run are averaged over 10 executions, and showcase the net volumetric remapping speedup rather than separately quantifying the cost of the horizontal and vertical phases of the remap.
 
 \subsection{Bathymetry treatment and regional applications}\label{conv:sec:bathysmooth}
 When the projected bathymetry in the \ROMS model changes rapidly in adjacent cells, the model can generate sigma-coordinate pressure-gradient errors over steep slopes~\citep{haney1991pressure,mellor1994pressure}. We condition it with a one-ring \emph{log-depth} averaging smoother. Writing $H_i$ for the depth (bathymetry) of \ROMS cell $i$, $q_i=\log H_i$ for its logarithm, $\mathcal{A}(i)$ for the set of edge-neighbours of that cell, and $m$ for the iteration counter, each sweep replaces the \emph{log-depth} of a cell by the mean over its one-ring neighbourhood, similar to a Laplacian smoother in the context of mesh optimization workflows. The iterative sequence can be wrriten as 
