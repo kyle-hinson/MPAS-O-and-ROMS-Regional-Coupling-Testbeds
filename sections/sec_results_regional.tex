@@ -4,12 +4,6 @@ Running \ROMS on finer regional meshes with \MPAS-derived boundary conditions pr
 \TODOc{Introduce and talk about benchmarks for regional domains and how these are validated}
 
 
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.88\textwidth]{Figures/regional_zeta.png}
-	\caption{Normalized relative-vorticity distributions, NISKINe and Gulf Stream.}
-	\label{fig:relVortPDF}
-\end{figure}
 % \FloatBarrier
 
 \begin{figure}[htbp]
@@ -30,16 +24,10 @@ with velocities represented at cell centers for the diagnostic.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{Figures/Region_KE_TimeSeries_3domains.png}
-\caption{Surface specific kinetic-energy time series for the three domains.}
+\caption{Surface specific kinetic-energy time series for the four domains.}
 \label{fig:region_KE}
 \end{figure}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.88\textwidth]{Figures/chesbay_ke_zeta.jpg}
-\caption{Surface kinetic energy and relative vorticity, Chesapeake Bay.}
-\label{fig:chesResults}
-\end{figure}
 \FloatBarrier
 
 The open-ocean and coastal applications occupy relative \ROMS characteristic lengths near $\hRatio\approx0.2$--$0.35$, whereas Chesapeake Bay is far finer relative to the \MPAS mesh. In every domain the regional solution alters both the geometry of the flow and its energy content relative to the \MPAS state. Because the regional model continues to evolve after initialization, these differences measure the combined effect of the transfer and the subsequent regional dynamics, and the convergence experiments of Sect.~\ref{conv:sec:conv} remain the quantitative statement about the transfer itself. The Chesapeake result depends particularly strongly on native bathymetry, land-mask treatment, and the blended estuarine fields, and we regard it as preliminary: the blending procedure is not specified in enough detail here for the case to be reproduced exactly. \TODOc{talk more about practical implementation of this case}
