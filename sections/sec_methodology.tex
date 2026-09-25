@@ -225,7 +225,8 @@ It is noted that the zonal and meridional velocities are transferred component-w
 \subsection{Regional domains and metrics}\label{conv:sec:regional-methods}
 
 
-\TODOc{Kyle: Need to add more details about the metrics that we care about in regional domains. Provide details about nudging, and how \ROMS utilizes the time-dependnet forcing conditions to get a consistent view of the global solution}
+\TODOc{Kyle: Need to add more details about the metrics that we care about in regional domains. Provide details about nudging, and how \ROMS utilizes the time-dependent forcing conditions to get a consistent view of the global solution}
 
 
-The solution verification uses the Gulf Stream and Bay of Bengal domains, while regional application validation also include the North Atlantic and Chesapeake Bay. Regional interpretation relies on relative-vorticity maps and surface kinetic-energy time series.
+The solution verification uses the Gulf Stream and Bay of Bengal domains, while regional application validation also include the North Atlantic and Chesapeake Bay. All regional domains employ a nudging layer of 5 cells (Bay of Bengal has a 10-cell nudging layer) that ensure boundary stability
+The interpretation of regional model results relies on snapshots of surface normalized relative vorticity ($\zeta/f$) and surface kinetic-energy (KE) time series. The snapshots of $\zeta/f$ show points of (in)stability between the boundary layer due to numerical gradients and are plotted at the halfway point (30 days) of the simulation period. Area-weighted surface KE time series are computed equivalently for the remapped and ROMS solutions, and are clipped to the fractional \MPAS cells that lie within the extent of the ROMS grid before also being computed as an area-weighted average.
