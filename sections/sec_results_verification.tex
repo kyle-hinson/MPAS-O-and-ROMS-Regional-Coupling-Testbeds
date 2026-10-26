@@ -22,35 +22,35 @@ The smooth field used throughout the convergence study is the tensor-product sin
 \end{equation}
 where $\lambda$ and $\varphi$ are longitude and latitude, $(\lambda_0,\varphi_0)$ is the southwest corner of the \ROMS bounding box, $L_\lambda$ and $L_\varphi$ are its angular extents, and $(m_\lambda,m_\varphi,m_z)$ are the mode numbers in the two horizontal directions and the vertical. The field has unit amplitude, $(m_\lambda,m_\varphi,m_z)=(2,2,1)$, and $H_0=\SI{4000}{\metre}$. It is transferred alongside salinity, temperature, and the two velocity components from one daily-mean \MPAS state. With $m_z=1$, Eq.~\eqref{conv:eq:analytic} carries only a half wavelength over the full depth, so it is smooth in the vertical by construction. %Sharp features such as the halocline, which the $L_\infty$ diagnostics below implicate, are therefore not represented in the analytic test.
 
-Writing $A$ for the area of the region shared by the two meshes, $n_{\mathrm{bbox}}$ for the number of \MPAS cells whose centers fall inside it, and $n_{\mathrm{cells}}$ for the number of \ROMS cells, the characteristic lengths of the two meshes are $\hM=\sqrt{A/n_{\mathrm{bbox}}}$ and $\hR=\sqrt{A/n_{\mathrm{cells}}}$, so that each is the side of the square cell that would tile the shared region with the given cell count. Their ratio $\hRatio=\hR/\hM=\sqrt{n_{\mathrm{bbox}}/n_{\mathrm{cells}}}$ depends only on the two counts, so it is independent of how the shared region is delimited. Four nested \ROMS meshes, r1 (coarsest) through r4 (finest), are used in each region. Their inventory is given in Table~\ref{conv:tab:grid-inventory}.
+We use the shared horizontal overlap area $A=\sum_{i,j}A_{ij}$, rather than the bounding-box area, to define $\hM=\sqrt{A/n_{\mathrm{bbox}}}$ and $\hR=\sqrt{A/n_{\mathrm{cells}}}$. Here $n_{\mathrm{bbox}}$ counts \MPAS cell centers within the longitude and latitude bounds of the \ROMS grid, and $n_{\mathrm{cells}}$ counts the \ROMS cells. These characteristic lengths use the same overlap area but retain the two mesh counts. Their ratio is $\hRatio=\hR/\hM=\sqrt{n_{\mathrm{bbox}}/n_{\mathrm{cells}}}$. The area cancels from this ratio, but the counts depend on the grid extent. Four nested \ROMS meshes, r1 (coarsest) through r4 (finest), are used in each region. Their inventory is given in Table~\ref{conv:tab:grid-inventory}.
 
 \begin{table}[htbp]
 \centering
 \small
 \setlength{\tabcolsep}{3pt}
-\caption{\ROMS uniform mesh refinements: r1 (coarsest) to r4 (finest).}
+\caption{Mesh refinements and characteristic lengths based on shared overlap area.}
 \label{conv:tab:grid-inventory}
-\begin{tabular}{llrrrr}
+\begin{tabular}{llrrrrr}
 \toprule
-Region & Label & $\eta_\rho\times\xi_\rho$ & Cells$^{\dagger}$ & $\hR$ (km) & $\hRatio$ \\
+Region & Label & Nodes & Cells$^{\dagger}$ & $\hM$ (km) & $\hR$ (km) & $\hRatio$ \\
 \midrule
-\multirow{4}{*}{Gulf Stream} & r1 & $38\times112$ & $4107$ & $14.70$ & $2.12$ \\
-& r2 & $114\times334$ & $37629$ & $4.92$ & $0.71$ \\
-& r3 & $341\times1001$ & $340000$ & $1.64$ & $0.24$ \\
-& r4 & $1023\times3003$ & $3068044$ & $0.55$ & $0.08$ \\
+\multirow{4}{*}{Gulf Stream} & r1 & $38\times112$ & $4107$ & $7.25$ & $14.92$ & $2.06$ \\
+& r2 & $114\times334$ & $37629$ & $7.18$ & $4.93$ & $0.69$ \\
+& r3 & $341\times1001$ & $340000$ & $7.15$ & $1.64$ & $0.23$ \\
+& r4 & $1023\times3003$ & $3068044$ & $7.14$ & $0.55$ & $0.08$ \\
 \midrule
-\multirow{4}{*}{Bay of Bengal} & r1 & $24\times40$ & $897$ & $36.05$ & $3.21$ \\
-& r2 & $74\times120$ & $8687$ & $12.02$ & $1.06$ \\
-& r3 & $222\times362$ & $79781$ & $4.01$ & $0.35$ \\
-& r4 & $666\times1086$ & $721525$ & $1.34$ & $0.12$ \\
+\multirow{4}{*}{Bay of Bengal} & r1 & $24\times40$ & $897$ & $13.02$ & $34.82$ & $2.67$ \\
+& r2 & $74\times120$ & $8687$ & $12.89$ & $11.21$ & $0.87$ \\
+& r3 & $222\times362$ & $79781$ & $12.83$ & $3.70$ & $0.29$ \\
+& r4 & $666\times1086$ & $721525$ & $12.81$ & $1.23$ & $0.10$ \\
 \bottomrule
 \end{tabular}
 
 \vspace{0.3em}
-{\footnotesize $^{\dagger}$Cell counts are $(\eta_\rho-1)(\xi_\rho-1)$, since $\eta_\rho$ and $\xi_\rho$ count \ROMS grid nodes and the transfer operates on the cells they bound.}
+{\footnotesize $^{\dagger}$The node column gives the \ROMS grid dimensions, and cell counts are their products after subtracting one in each direction, since the transfer operates on the cells the nodes bound.}
 \end{table}
 
-The \MPAS mesh in the Gulf Stream region has a local refinement with characteristic length of $\hM=\SI{6.89}{\kilo\metre}$, whereas over the Bay of Bengal region, the \MPAS mesh has a coarser characteristic length of $\hM=\SI{11.28}{\kilo\metre}$. The same labels therefore denote different absolute characteristic lengths but comparable relative refinements. For the regional cases demonstrated in this work, we have chosen \ROMS meshes with r3 labels for the Gulf Stream and Bay of Bengal with $\hRatio$ of $0.24$ and $0.35$ respectively.
+At r3, the shared-area \MPAS characteristic lengths are $\hM=\SI{7.15}{\kilo\metre}$ in the Gulf Stream and $\hM=\SI{12.83}{\kilo\metre}$ in the Bay of Bengal. Their small variation across each sequence reflects changes in the overlap area and bounding-box cell count, not refinement of the \MPAS mesh. The regional applications use the r3 \ROMS grids, with $\hR=\SI{1.64}{\kilo\metre}$ and $\SI{3.70}{\kilo\metre}$ and ratios $\hRatio\approx0.23$ and $0.29$, respectively.
 
 
 
@@ -82,7 +82,7 @@ When horizontal and axial resolutions are jointly refined at comparable rates, t
 
 A convergence study in the usual sense would refine both the \MPAS and \ROMS meshes together. Here the \MPAS global mesh is fixed, as it would be in practice, and we refine only the embedded \ROMS meshes. The sequences below therefore measure how the transfer responds to \ROMS refinement against a fixed \MPAS mesh, not the asymptotic order of the operator.
 
-Figures~\ref{conv:fig:gs-convergence} and~\ref{conv:fig:bob-convergence} show the interior round-trip norms of Eq.~\eqref{conv:eq:norms} versus $\hRatio$ for the two regions. Each panel set reports the volume-weighted $\Lone$ and $\Ltwo$ and the unweighted $\Linf$ for salinity, temperature, the two velocity components, and the smooth analytic field, with scalar errors normalized by representative absolute field magnitudes. Recall from Table~\ref{conv:tab:grid-inventory} that $\hRatio=1$ corresponds to an \MPAS characteristic length of $\SI{6.9}{\kilo\metre}$ in the Gulf Stream and $\SI{11.3}{\kilo\metre}$ in the Bay of Bengal.
+Figures~\ref{conv:fig:gs-convergence} and~\ref{conv:fig:bob-convergence} show the interior round-trip norms of Eq.~\eqref{conv:eq:norms} versus $\hRatio$ for the two regions. Each panel set reports the volume-weighted $\Lone$ and $\Ltwo$ and the unweighted $\Linf$ for salinity, temperature, the two velocity components, and the smooth analytic field, with scalar errors normalized by representative absolute field magnitudes. The resolution ratios use the shared-area definitions in Table~\ref{conv:tab:grid-inventory}, with $\hRatio=1$ denoting equal characteristic lengths.
 
 %% Gulfstream convergence
 \begin{figure}[htbp]
@@ -92,8 +92,7 @@ Figures~\ref{conv:fig:gs-convergence} and~\ref{conv:fig:bob-convergence} show th
 \label{conv:fig:gs-convergence}
 \end{figure}
 
-Errors decrease over the coarse portion of both sequences, but the real-field errors do not show consistent changes beyond r3 refinments with $\varrho\approx0.25$ i.e., roundtrip error plateaus.
-The error convergence sequences suggest that $\hRatio\approx0.2$, roughly a five-fold refinement of the \ROMS mesh, is a useful starting point when choosing the \ROMS mesh reolution, and targets at or below $\hRatio\approx0.1$ should be justified by a refinement study for domain of interest when balancing accuracy and computational efficiency. The same value emerges in both the open-ocean and  coastal domain cases, which validates the choice of $\varrho$ as a good starting guess. However, our recommendation is to always perform a roundtrip convergence study to confirm the optimal refinement ratio for realistic simulation campaigns for each new domain.
+Errors decrease over the coarse portion of both sequences, but the real-field errors change little from r3 to r4. These pairs span $\hRatio=0.23$ to $0.08$ in the Gulf Stream and $0.29$ to $0.10$ in the Bay of Bengal. The r3 ratios suggest $\hRatio\approx0.2$--$0.3$ as an initial range to examine when selecting a regional mesh, rather than a common threshold established by both domains. A refinement study should confirm the choice for each new domain.
 
 More generally, for a fixed global \MPAS mesh, a short convergence sequence like this is practical to identify the characteristic length beyond which further refinement of the \ROMS mesh ceases to be worthwhile. As in any multiscale configuration, the lateral boundary conditions supplied from \MPAS carry coarse scale errors that cannot be resolved by \ROMS, or by the forcing itself, as these do not diminish as the \ROMS mesh is refined, so that relative to $\hRatio$ the errors remain $\mathcal{O}(1)$. Because that floor is set by the \MPAS state rather than by the transfer, refining past the point where the sequence flattens buys little in the fidelity of the transferred fields, though we have not measured what it does to the regional solution that evolves from them. The cost, meanwhile, continues to grow: the number of \ROMS cells scales as $\hRatio^{-2}$ and a CFL-limited time step shrinks in proportion to the characteristic length, so integrating a fixed period becomes roughly $\hRatio^{-3}$ more expensive. Choosing the \ROMS characteristic length near the flattening point therefore captures most of the accuracy that the \MPAS state makes available, at a small fraction of the cost of the finest grids tested. We did not run targets below $\hRatio\approx0.08$, so this is an argument about the range examined rather than an asymptotic claim.
 
@@ -123,17 +122,27 @@ The benchmark projects four fields from a source mesh of $5.7\times10^6$ polyhed
 
 \TODOc{Rerun more experiments to determine cost for refined GS and BoB cases}
 
+%\begin{figure}[htbp]
+%\centering
+%\includegraphics[width=0.7\textwidth]{Figures/conv_omp_scaling_perlmutter.png}
+%\caption{Strong scaling of the four-field projection at $N_z=50$ and $N_z=100$.}
+%\label{conv:fig:omp-scaling}
+%\end{figure}
+
+
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=0.7\textwidth]{Figures/conv_omp_scaling_perlmutter.png}
-\caption{Strong scaling of the four-field projection at $N_z=50$ and $N_z=100$.}
-\label{conv:fig:omp-scaling}
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/z20_thread_scaling.png} \\
+	\includegraphics[width=0.9\textwidth]{Figures/z100_thread_scaling.png}
+	\caption{Strong scaling of the four-field projection at $N_z=20$ and $N_z=100$.}
+	\label{conv:fig:omp-scaling-perlmutter}
 \end{figure}
-\FloatBarrier
+
+
 
 \TODOc{Also need to modify code to eliminate all I/O etc in timing}
 
-Figure~\ref{conv:fig:omp-scaling} shows a measured speedup of $34.5\times$ at $N_z=100$ and $33.6\times$ at $N_z=50$, corresponding to an average of 53\% strong-scaling parallel efficiency at 64 threads, while the two vertical-resolution curves nearly overlap. The resuls for the run are averaged over 10 executions, and showcase the net volumetric remapping speedup rather than separately quantifying the cost of the horizontal and vertical phases of the remap.
+Figure~\ref{conv:fig:omp-scaling-perlmutter} shows a measured speedup of $34.5\times$ at $N_z=100$ and $33.6\times$ at $N_z=50$, corresponding to an average of 53\% strong-scaling parallel efficiency at 64 threads, while the two vertical-resolution curves nearly overlap. The resuls for the run are averaged over 10 executions, and showcase the net volumetric remapping speedup rather than separately quantifying the cost of the horizontal and vertical phases of the remap.
 
 \subsection{Bathymetry treatment and regional applications}\label{conv:sec:bathysmooth}
 When the projected bathymetry in the \ROMS model changes rapidly in adjacent cells, the model can generate sigma-coordinate pressure-gradient errors over steep slopes~\citep{haney1991pressure,mellor1994pressure}. We condition it with a one-ring \emph{log-depth} averaging smoother. Writing $H_i$ for the depth (bathymetry) of \ROMS cell $i$, $q_i=\log H_i$ for its logarithm, $\mathcal{A}(i)$ for the set of edge-neighbours of that cell, and $m$ for the iteration counter, each sweep replaces the \emph{log-depth} of a cell by the mean over its one-ring neighbourhood, similar to a Laplacian smoother in the context of mesh optimization workflows. The iterative sequence can be wrriten as 
@@ -147,21 +156,27 @@ with clipping to the \MPAS range. Operating on $\log H$ rather than $H$ makes th
  r_{\max}^{(m)}=\max_i\max_{i'\in\mathcal{A}(i)}\frac{q_i^{(m)}-q_{i'}^{(m)}}{q_i^{(m)}+q_{i'}^{(m)}}<0.05.
  \label{conv:eq:slope-stop}
 \end{equation}
-Evaluated on the same log-depths, this test plays the role of the $r$-factor conventionally used to condition terrain-following grids~\citep{sikiric2009smoothing}. The results from applying the bathymetry smoothing and its effect on the stability of the \ROMS model simulation is described in Fig.~\ref{conv:fig:smoothing}.
-\REVIEWc{Kyle: Confirm whether the BoB stability issues occurred without smoothing in the newer runs. I do not remember if the figure is from an older experiment}
+Evaluated on the same log-depths, this test plays the role of the $r$-factor conventionally used to condition terrain-following grids~\citep{sikiric2009smoothing}. The results from applying the bathymetry smoothing and its effect on the sharpness of the \ROMS model simulation is demonstrated in Fig.~\ref{conv:fig:smoothing}. When the bathymetry has a stronger local variation, the unsmoothed projections could potentially result in an unstable condition, which will render the nested multiscale simulations unusable. In general, for such cases, limiting the logarithm of the bathymetry changes to be less than 5\%, throughout the domain, can help the \ROMS simulations remain stable. However, note that smoothing process can render features that would otherwise produce a sharp gradient, as shown in the axial profile of the unsmoothed (right) figure in  Fig.~\ref{conv:fig:smoothing}.
+
+%\REVIEWc{Kyle: Confirm whether the BoB stability issues occurred without smoothing in the newer runs. I do not remember if the figure is from an older experiment}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{Figures/conv_bathy_smoothing.png}
-\caption{Projected Bay of Bengal bathymetry before and after smoothing.}
+\includegraphics[width=0.7\textwidth]{Figures/smoothed_unsmoothed_BoB.png}
+\caption{Effect of bathymetry smoothing for the Bay of Bengal domain.}
 \label{conv:fig:smoothing}
 \end{figure}
 \FloatBarrier
 
-Limiting the logarithm of the bathymetry changes in neighborhoods to be less than 5\% kept the \ROMS simulations stable in the Bay of Bengal domain. This smoothing process bounded the maximal remapping error and its propagation during simulation, which removed a warm temperature anomaly between 100m and 200m near masked coastlines in the unsmoothed case. This procedure is vital in regional applications where coastal or estuarine topography is inadequately resolved by the \MPAS global model, which forces us to blend with the native \ROMS bathymetry and to retain the \ROMS land mask as needed. 
+%This smoothing process bounded the maximal remapping error and its propagation during simulation, which removed a warm temperature anomaly between 100m and 200m near masked coastlines in the unsmoothed case. This procedure is vital in regional applications where coastal or estuarine topography is inadequately resolved by the \MPAS global model, which forces us to blend with the native \ROMS bathymetry and to retain the \ROMS land mask as needed. 
 
-The Chesapeake Bay domain is the clearest example showcasing this issue. Here, the \MPAS mesh cannot adequately represent the estuarine geometry, therefore the boundary and initial fields there must be prescribed and blended. This was accomplished in a two step process. First, a priori initial conditions were selected from an existing regional modeling simulation for a time period that most closely matched the distribution of SST and SSS in the \MPAS solution. Given that both the \MPAS resolution and land mask within the confines of the estuary were ill-suited for the task, we selected three zones over which the two datasets (existing ROMS and \MPAS solution) would be blended (Fig. \ref{conv:fig:chesapeake-bay-salinity}b). All points within the estuary ending at the mouth of the Chesapeake Bay were assigned the values of the ROMS solution with no influence provided by \MPAS. In a blended area between the mouth of the Bay and part of the continental shelf, values were spatially interpolated between the ROMS and MPAS solution based on proximity to the Bay mouth. Cell locations nearer to the ROMS grid were more heavily weighted to the regional model solution and vice versa. Further, all land-masked points defaulted to the ROMS solution given the complexity of the Eastern Shore barrier island geometry. All points beyond this blended region were assigned values from the original \MPAS remapped solution. This method was undertaken for model bathymetry, as well as all velocity and tracer variables to ensure model run stability.
+The Chesapeake Bay domain is the clearest example showcasing this issue. Here, the \MPAS mesh cannot adequately represent the estuarine geometry, therefore the boundary and initial fields there must be prescribed and blended. This was accomplished in a two step process. First, a priori initial conditions were selected from an existing regional modeling simulation for a time period that most closely matched the distribution of SST and SSS in the \MPAS solution. Given that both the \MPAS resolution and land mask within the confines of the estuary were ill-suited for the task, we selected three zones over which the two datasets (existing \ROMS and \MPAS solution) would be blended (Fig. \ref{conv:fig:chesapeake-bay-salinity}b). All points within the estuary ending at the mouth of the Chesapeake Bay were assigned the values of the \ROMS solution with no influence provided by \MPAS. In a blended area between the mouth of the Bay and part of the continental shelf, values were spatially interpolated between the \ROMS and MPAS solution based on proximity to the Bay mouth. Cell locations nearer to the \ROMS grid were more heavily weighted to the regional model solution and vice versa. Further, all land-masked points defaulted to the \ROMS solution given the complexity of the Eastern Shore barrier island geometry. All points beyond this blended region were assigned values from the original \MPAS remapped solution. This method was undertaken for model bathymetry, as well as all velocity and tracer variables to ensure model run stability.
 \TODOc{Kyle: Talk more about bathymetry blending, smoothing, initial/forcing condition extrapolation etc for Chesapeake Bay case}
+
+Another good example domain that required tuning of both the bathymetry description and the remapping algorithm is the Chesapeake Bay domain. Here, the \MPAS mesh cannot adequately represent the estuarine geometry, therefore the boundary and initial fields there must be prescribed and blended accordingly. This was accomplished in a two step process. First, a priori initial conditions were selected from an existing regional modeling simulation for a time period that most closely matched the distribution of SST and SSS in the \MPAS solution. Given that both the \MPAS resolution and land mask within the confines of the estuary were ill-suited for the task, we selected three zones over which the two datasets (existing \ROMS and \MPAS solution) would be blended. All points within the estuary ending at the mouth of the Chesapeake Bay were assigned the values of the \ROMS solution with no influence provided by \MPAS. In a blended area between the mouth of the Bay and part of the continental shelf, values were spatially interpolated between the \ROMS and MPAS solution based on proximity to the Bay mouth. Cell locations nearer to the \ROMS grid were more heavily weighted to the regional model solution and vice versa. Further, all land-masked points defaulted to the \ROMS solution given the complexity of the Eastern Shore barrier island geometry. All points beyond this blended region were assigned values from the original \MPAS remapped solution. This method was undertaken for model bathymetry, as well as all velocity and tracer variables to ensure model run stability.
+\TODOc{Kyle: Need the cutoff region defined for blend}
+%\TODOc{Kyle: Talk more about bathymetry blending, smoothing, initial/forcing condition extrapolation etc for Chesapeake Bay case}
+\TODOc{VSM: Rewrite two conflicted paragraphs above}
 
 \begin{figure}[htbp]
 \centering
@@ -171,4 +186,5 @@ The Chesapeake Bay domain is the clearest example showcasing this issue. Here, t
 \end{figure}
 \FloatBarrier
 
+\subsection{Fidelity Metrics for Regional Domains}
 \input{sections/sec_results_regional}

@@ -1,5 +1,6 @@
 
-The global \MPAS model uses Centroidal Voronoi Tessellation (CVT) to generate a variable-resolution polygonal mesh, which provides a smooth transition between coastal and deep-ocean regions and avoids the abrupt refinement interfaces that degrade accuracy in long integrations. The regional \ROMS model, at typically higher spatiotemporal resolution, uses a boundary-fitted curvilinear grid, so that a regionally structured mesh is embedded within the unstructured global polygonal mesh. We will discuss the problem setup, the complications that arise due to variations in axial coordinate systems~\citep{petersen2015evaluation}, and describe the algorithm that achieves consistent embeddings to transfer the forcing conditions accurately and efficiently.
+
+The global \MPAS model uses Centroidal Voronoi Tessellation (CVT) to generate a variable-resolution polygonal mesh, which provides a smooth transition between coastal and deep-ocean regions and avoids the abrupt refinement interfaces that degrade accuracy in long term integrations. The regional \ROMS model, at typically higher spatiotemporal resolution, uses a boundary-fitted curvilinear grid, so that a regionally structured mesh is embedded within the unstructured global polygonal mesh. We will discuss the problem setup, the complications that arise due to variations in axial coordinate systems~\citep{petersen2015evaluation}, and describe the algorithm that achieves consistent embeddings to transfer the forcing conditions accurately and efficiently.
 
 \subsection{Problem statement and notation}\label{sec:problem}
 
@@ -11,18 +12,27 @@ $\sigma$) systems, as illustrated in Figure~\ref{conv:fig:coord-mismatch}.
 
 
 Let the {\MPAS} global ocean mesh cover a region of interest with
-$n_M$ Voronoi cells, each carrying a column of tracer values on
-$K_M$ geopotential $z^*$ levels $\{\zmpas_k\}_{k=1}^{K_M}$, whose
-thicknesses respond to the free surface but which are indexed
-identically in every column. Let the \ROMS{}
-grid have $n_R$ horizontal cells, each with a column of
-$K_R$ terrain-following (sigma) levels whose absolute depths
-$\{z_\ell^{(i)}\}_{\ell=1}^{K_R}$ depend on the local bathymetry
-$H_i$ and free-surface elevation $\zeta_i$ through the Song--Haidvogel
-stretching transformation~\citep{song1994semi,shchepetkin2005regional}.
-A three-dimensional \MPAS field is then given by the array
-$\Phi \in \mathbb{R}^{n_M \times K_M}$ and the projected \ROMS 
-regional field is $\Psi \in \mathbb{R}^{n_R \times K_R}$. The problem at hand is to compute a consistent and conservative three-dimensional solution transfer of $\Psi$ from global \MPAS models containing $\Phi$ to achieve a  multiscale solution framework with submesoscale resolution and consistent forcing conditions.
+$n_M$ Voronoi cells. Column $j$ contains $K_M$ geopotential $z^*$
+layers with physical interfaces
+$\{z^M_{j,k+1/2}\}_{k=0}^{K_M}$ and layer thicknesses
+$\Delta z^M_{j,k}=|z^M_{j,k+1/2}-z^M_{j,k-1/2}|$. The level index is
+common to all \MPAS columns, although the physical interfaces and wet
+layer count can vary with free-surface elevation, bathymetry, and
+masking. Let the \ROMS grid have $n_R$ horizontal cells. Column $i$
+contains $K_R$ terrain-following ($\sigma$) layers with physical
+interfaces $\{z^R_{i,\ell+1/2}\}_{\ell=0}^{K_R}$ and thicknesses
+$\Delta z^R_{i,\ell}=|z^R_{i,\ell+1/2}-z^R_{i,\ell-1/2}|$, determined
+by the local bathymetry $H_i$ and free-surface elevation $\zeta_i$
+through the Song--Haidvogel stretching transformation
+\citep{song1994semi,shchepetkin2005regional}. The discrete values are
+finite-volume layer averages. An \MPAS field is
+$\Phi\in\mathbb{R}^{n_M\times K_M}$ and its projected \ROMS field is
+$\Psi\in\mathbb{R}^{n_R\times K_R}$. The downscaling problem is to
+construct a consistent transfer $\Phi\mapsto\Psi$ while stating
+separately which properties are provided by its horizontal and vertical
+factors. The normalized horizontal remap preserves the area-weighted
+integral over the shared horizontal domain, but it does not impose
+conservation independently within each cell.
 
 \begin{figure}[htbp]
 \centering
@@ -41,42 +51,43 @@ regional field is $\Psi \in \mathbb{R}^{n_R \times K_R}$. The problem at hand is
 \end{figure}
 
 Note that a fully
-three-dimensional intersection to compute a supermesh~\citep{ullrich2015arbitrary} of two such cell complexes can be computed, but in general will involve $O(n_M K_M n_R K_R)$ computational complexity to decipher candidate overlaps (worst case),
-and can produce multiple sliver polyhedra whose quadratures may be ill-conditioned.
-We instead exploit the fact that the \MPAS{} $\zmpas$ coordinate shares a
-common level indexing across all \MPAS columns: level $k$ refers to
-the same layer of the discretization everywhere, even though its
-physical thickness varies from column to column with the free surface, the bottom topography and axial masking. A single horizontal map can therefore be
-applied slab by slab at fixed $k$, which factors the volumetric transfer into a
-horizontal remap and a one-dimensional vertical remap. The physical
+three-dimensional intersection to compute a supermesh~\citep{farrell2009supermesh} of two such cell complexes can be computed, but in general will involve $O(n_M K_M n_R K_R)$ computational complexity to decipher candidate overlaps (worst case),
+and can produce multiple sliver polyhedra whose quadratures may be quite ill-conditioned.
+We will instead exploit the fact that the \MPAS{} $\zmpas$ coordinate shares a
+common level indexing across all \MPAS columns, where level $k$ refers to
+the same layer of the discretization everywhere in the global domain, even though its
+physical thickness varies from column to column with the free surface, the bottom topography and vertical masking. A single horizontal map can therefore be
+applied slab by slab at fixed $k$, which factors the volumetric transfer into a tensor product of a 
+horizontal remap at each level followed with a one-dimensional vertical remap on each cell. The physical
 depths that the vertical remap requires are recovered per column
 afterwards, and so the factorization does not assume that the levels are
 horizontally flat. Instead, we assume that interpolating within a
-level index is meaningful, which holds when the physical $\zmpas$ surfaces vary
-slowly relative to the horizontal stencil.
+level index is meaningful, which holds when the physical $\zmpas$ surfaces vary slowly relative to the horizontal stencil.
 
-Throughout the manuscript, the \MPAS model is referred to as the \emph{source} and \ROMS as the \emph{target}. However, note that the algorithmic design is agnostic to the structured or unstructured nature of the underlying topology. In terms of notation, we also use the subscript $j$ for \MPAS cell indices, and $i$ for \ROMS cells, while $k$ and $\ell$ index \MPAS and \ROMS vertical levels respectively. Uppercase $\Phi,\Xi,\Psi$ denote whole
-three-dimensional arrays, and the corresponding lowercase $\phi,\psi$
-denote a single horizontal slab extracted at a fixed level, so that
-$\phi_j=\Phi_{j,k}$ for the level $k$ under discussion. Cell areas carry the mesh as a superscript: $A^M_j$ is the
-area of \MPAS cell $j$, $A^R_i$ that of \ROMS cell $i$, and $A_{ij}$
-the area of their intersection. All geometry is treated on the unit
+Throughout the manuscript, the \MPAS model is referred to as the \emph{source} and \ROMS as the \emph{target}. However, note that the algorithmic design is agnostic to the structured or unstructured nature of the underlying topology. In terms of notation, we also use the subscript $j$ for \MPAS cell indices, and $i$ for \ROMS cell indices, while $k$ and $\ell$ index \MPAS and \ROMS vertical layers respectively. Uppercase $\Phi,\Xi,\Psi$ denote whole
+three-dimensional arrays, with $\Xi\in\mathbb{R}^{n_R\times K_M}$
+denoting the horizontally remapped field on the \MPAS level index. The
+corresponding lowercase $\phi,\psi$ denote a single horizontal slab extracted at a fixed level, so that
+$\phi_j=\Phi_{j,k}$ for a given level $k$. The cell areas are represented as $A^M_j$ for the \MPAS cell $j$, and $A^R_i$ for the \ROMS cell $i$, and $A_{ij}$
+is the area of their intersection cell. All geometry is normalized to be on the unit
 sphere, and spherical areas on the manifold are computed by \emph{L'Huilier}'s excess
-formula on the unit sphere, scaled appropriately by the \MPAS Earth radius.
+formula on the unit sphere, though better options based on integrals over a spherical triangle using Gauss-quadrature \citep{ullrich2016tempestremap} are available as options.
 
 % Methods section.
-\subsection{Separable volumetric remapping}\label{conv:sec:methods}
+%\subsection{Separable volumetric remapping}
+%\label{conv:sec:methods}
 
-Writing $\Xi$ for the intermediate field that results from transferring
-every \MPAS level horizontally, and $\mathcal{V}$ for the column-wise
-vertical remap, the composed transfer operation is
+Writing $\Xi$ as the intermediate field that results from transferring
+every \MPAS level horizontally, the complete transfer is
 \begin{equation}
-  \Xi_{i,k}=\sum_j W_{ij}\Phi_{j,k},\qquad \Psi=\mathcal{V}(\Xi),
+  \Xi_{i,k}=\sum_{j=1}^{n_M}W_{ij}\Phi_{j,k},\qquad
+  \Psi_{i,\ell}=\sum_{k=1}^{K_M}V^{(i)}_{\ell k}\Xi_{i,k},
   \label{conv:eq:tensor}
 \end{equation}
 
 where the horizontal map $W$ is reused unchanged at every \MPAS level
-and $\mathcal{V}$ acts independently on each \ROMS column. This
+and the column-dependent vertical map $V^{(i)}$ acts independently on
+each \ROMS column. This
 prism-based 2D$\times$1D construction avoids sliver polyhedra while
 retaining the column geometry that the vertical remap requires. The two
 factors are in turn developed in \S \ref{sec:horizontal} and
@@ -86,7 +97,7 @@ factors are in turn developed in \S \ref{sec:horizontal} and
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=\textwidth]{Figures/remapping_schematics.png}
-	\caption{Schematic of the offline volumetric transfer and regional domains.}
+	\caption{Schematic of the volumetric transfer between global and regional domains using tensor product remapping.}
 	\label{fig:remap_methods}
 \end{figure}
 
@@ -104,12 +115,12 @@ $\phi=\Phi_{:,k} \in \mathbb{R}^{n_M}$ as the sparse linear map
 	\qquad W \in \mathbb{R}^{n_R \times n_M},
 	\label{eq:linear-map}
 \end{equation}
-as defined by~\citet{ullrich2015arbitrary,ullrich2016tempestremap}. Two
+as defined by~\citet{ullrich2015arbitrary}. Two
 specific constructions of the weights in Eq.~\eqref{eq:linear-map} are
 considered below, and they primarily differ in whether strict conservation or
 smoothness is enforced for problem at hand.
 
-\paragraph{Conservative finite-volume (FV) map.}
+\subsubsection{Conservative finite-volume (FV) map}
 The first-order conservative finite-volume linear-map ~\citep{jones1999scrip} is computed based on the full supermesh in order to account for the contributions from all partial subcell geometry neighbors from the \MPAS mesh overlapping the \ROMS elements. This sets the
 weight to the area of geometric overlap between \ROMS cell $i$ and
 \MPAS cell $j$, normalized by the \ROMS area,
@@ -121,12 +132,12 @@ weight to the area of geometric overlap between \ROMS cell $i$ and
 where $\Omega_i$, $\Omega_j$ are the (spherical) \ROMS and \MPAS
 polygons and $A_{ij}$ their intersection area. This map is
 \emph{conservative only over the \ROMS bounded subdomain}, a
-qualification that matters here because the \ROMS{} domain is a subset embedded in the global \MPAS{} mesh. 
+condition that matters here because the \ROMS{} domain is a subset embedded in the global \MPAS{} mesh. 
 
 
 %\paragraph{Coverage classification.}
 % \label{sec:classification}
-Note that the \ROMS mesh is a bounded region embedded in the global \MPAS mesh, and so every \ROMS cell is labeled based on whether it is within the convex hull of the \MPAS coverage mesh~\citep{mahadevan2020coupling}. Let $f^M_j$ and $f^R_i$ denote the covered fractions of \MPAS cell $j$ and \ROMS cell $i$, obtained from the overlap areas $A_{ij}$ of the FV supermesh. Cells with $f=1$ are \emph{interior}, and those with $0<f<1$ are only \emph{partially} covered. The interior set, written as $\mathcal{I}$, is the support on which the error norms of \S\ref{conv:sec:verification-method} are evaluated. 
+The \ROMS mesh is a bounded region embedded in the global \MPAS mesh, and so every \ROMS cell is labeled based on whether it is within the convex hull of the \MPAS coverage mesh~\citep{mahadevan2020coupling}. Let $f^M_j$ and $f^R_i$ denote the covered fractions of \MPAS cell $j$ and \ROMS cell $i$, obtained from the overlap areas $A_{ij}$ of the FV supermesh. Cells with $f=1$ are \emph{interior}, and those with $0<f<1$ are only \emph{partially} covered. The interior set, written as $\mathcal{I}$, is the support on which the error norms of \S\ref{conv:sec:verification-method} are evaluated. 
 
 %Coverage-weighted conservation is a separate map property and condition:
 %\begin{equation}
@@ -134,7 +145,7 @@ Note that the \ROMS mesh is a bounded region embedded in the global \MPAS mesh, 
 %	=\sum_j A^M_j f^M_j\,\Phi_{j,k}.
 %	\label{conv:eq:bilin-conservation}
 %\end{equation}
-%Equation~\eqref{conv:eq:bilin-conservation} is weighted by the covered fractions on both sides, so it constrains only the shared support of the two meshes. It is satisfied by the conservative FV map of Eq.~\eqref{eq:fv-weight} but not by the normalized bilinear map of Eq.~\eqref{conv:eq:bilin-weight}, which is the trade discussed in \S\ref{sec:why-not-fv}.
+%Equation~\eqref{conv:eq:bilin-conservation} is weighted by the covered fractions on both sides, so it constrains only the shared support of the two meshes. The FV map satisfies it directly through overlap weights. The bilinear remap satisfies it after the domain-wide normalization in Eq.~\eqref{eq:bilin-global-normalization}, but not independently within each cell.
 
 %The horizontal classification is essentially fixed across each refinement sequence, because it depends on the target footprint rather than on the target spacing. In the Gulf Stream, 10{,}158--10{,}162 source cells are interior and 534--536 are partial across r1--r4, and in the Bay of Bengal, 4249--4265 are interior and 280--320 partial. What does change with refinement is the number of target columns discarded for lack of a valid vertical reconstruction, which is reported alongside the Bay of Bengal sequence below.
 
@@ -142,7 +153,7 @@ Note that since
 $\sum_i A_{ij} = A^M_j$ holds only for a \MPAS cell fully covered by the
 union of \ROMS cells, the area-weighted integral identity
 $\sum_i A^R_i \psi_i = \sum_j A^M_j \phi_j$ is exact for \MPAS cells
-interior to the \ROMS boundary and needs to include a fractional weighting (computed from supermesh construction) for \MPAS cells that only partially overlaps with \ROMS domain. Hence computing the conservation of fluxes and states in the \ROMS domain boundary strictly requires topological intersections, without which we
+interior to the \ROMS boundary and needs to include a fractional weighting (computed from supermesh construction) for \MPAS cells that only partially overlaps with \ROMS domain. Hence, computing the conservation of fluxes and states in the \ROMS domain boundary strictly requires topological intersections, without which we
 can only enforce weak conservation over $\mathcal{I}$. 
 
 The conservative FV map is first-order accurate and, being
@@ -151,22 +162,44 @@ $\sum_j W^{\mathrm{FV}}_{ij}=1$ on fully-covered cells), it is
 property-preserving on those cells i.e., the transferred values are bounded
 by the \MPAS value range in the covering mesh.
 
-\paragraph{Normalized bilinear map.}
+\subsubsection{Normalized bilinear map}
 The bilinear map locates each \ROMS cell centroid within the
 \MPAS triangulation, forms bilinear interpolation weights
-$b_{ij}$ from the enclosing \MPAS elements, and row-normalizes them, following the linear-map framework of~\citet{ullrich2015arbitrary,ullrich2016tempestremap}.
+$b_{ij}$ from the enclosing \MPAS elements, and row-normalizes them, following the linear-map framework of~\citet{ullrich2015arbitrary,ullrich2016tempestremap}. The provisional map is
 \begin{equation}
-	W^{\mathrm{BL}}_{ij}
-	\;=\; \frac{b_{ij}}{\sum_{j'} b_{ij'}} ,
-	\label{conv:eq:bilin-weight}
+  \widehat{W}^{\mathrm{BL}}_{ij}
+  \;=\; \frac{b_{ij}}{\sum_{j'} b_{ij'}} ,
+  \label{conv:eq:bilin-weight}
 \end{equation}
 so that constant fields are reproduced exactly
-($\sum_j W^{\mathrm{BL}}_{ij}=1$). The bilinear map is not globally
-conservative by construction, since its column sums are not area ratios as in Eq.~\eqref{eq:fv-weight}. It is, however, formally second-order accurate on smooth fields \citep{ullrich2015arbitrary} and, more importantly for the downscaling setup, it does not tie the \ROMS values to the piecewise-constant average of a single \MPAS cell. When the \ROMS centroid lies within the enclosing \MPAS element the weights are nonnegative and form a convex combination, so the map is property-preserving: the transferred values are bounded by the \MPAS value range in the enclosing element. Its second-order horizontal accuracy does not raise the order of the composed transfer, which is limited by the conservative vertical remap of \S\ref{sec:vertical}, as discussed in \S\ref{conv:sec:conv}.
+($\sum_j \widehat{W}^{\mathrm{BL}}_{ij}=1$). For a field slab $\phi$,
+let $\widehat{\psi}_i=\sum_j\widehat{W}^{\mathrm{BL}}_{ij}\phi_j$.
+The domain-wide normalization on the shared support is
+\begin{equation}
+ \alpha=
+ \frac{\sum_j A^M_j f^M_j\phi_j}
+      {\sum_i A^R_i f^R_i\widehat{\psi}_i},
+ \qquad
+ \psi_i=\alpha\widehat{\psi}_i.
+ \label{eq:bilin-global-normalization}
+\end{equation}
+This normalization preserves the area-weighted integral over the entire
+shared domain. It is not locally conservative because the contribution
+assigned to an individual \ROMS cell is not determined by overlap areas
+as in Eq.~\eqref{eq:fv-weight}. The provisional bilinear map is formally
+second-order accurate on smooth fields \citep{ullrich2015arbitrary} and
+does not tie the \ROMS values to the piecewise-constant average of one
+\MPAS cell. When a \ROMS centroid lies within the enclosing \MPAS element,
+the provisional weights are nonnegative and form a convex combination.
+The domain-wide factor can alter this local bound when $\alpha\ne1$.
+The second-order horizontal accuracy does not necessarily raise the order
+of the composed tensor-product transfer, which is also limited by the
+vertical remap of \S\ref{sec:vertical}, as discussed in
+\S\ref{conv:sec:conv}.
 
 
 
-\subsection{Issues with conservative FV map for tracers}\label{sec:why-not-fv}
+\subsubsection{Issues with conservative FV map for tracers}\label{sec:why-not-fv}
 
 The monotone, conservative finite-volume (FV) map in \eqref{eq:fv-weight} is the lowest-order case of the \(L_2\)-minimization framework used for general mesh remapping \citep{ullrich2015arbitrary,ullrich2016tempestremap}. Given compatible bases on the two meshes, the transferred field minimizes the error in the integral of the field defined on the overlapping domain between a source and target mesh topology
 \begin{equation}
@@ -181,11 +214,11 @@ leading to a discrete system $\mathcal{W}\Phi=\Psi$, where $\mathcal{W}$ is the 
 %Under first-order FV remapping, all fine \ROMS cells lying within a given \MPAS Voronoi cell receive the same \MPAS cell average. The resulting field is therefore piecewise constant on the \MPAS tessellation, even though it is represented on the fine \ROMS grid. This appears as a staircase pattern whose discontinuities follow \MPAS cell edges.
 %
 
-Figure~\ref{fig:mesh-imprinting} demonstrates the effect of using the two types of projections namely the conservative FV(1) method and the bilinear algorithm for the bathymetry field over the refined North Atlantic domain. In the configurations considered here, the \ROMS cells are typically much smaller (5x on average) than the \MPAS ocean model cells, leading to $\hRatio\approx0.2$. The conservative FV-based map projection result (center) reproduces the \MPAS Voronoi tessellation as piecewise-constant patches with sharp artificial steps, while the normalized bilinear projection (right) remains smooth. 
+Figure~\ref{fig:mesh-imprinting} demonstrates the effect of using the two types of projections namely the conservative FV(1) method and the bilinear algorithm for the bathymetry field over the refined North Atlantic domain, where the \ROMS cells are smaller than the \MPAS cells. The conservative FV-based map projection result (center) reproduces the \MPAS Voronoi tessellation as piecewise-constant patches with sharp artificial steps, while the normalized bilinear projection (right) remains smooth.
 %
-These discontinuities are not physical gradients. They are introduced solely by the transfer operator and can inject grid-scale noise or adjustment features aligned with the \MPAS mesh when the field is used to initialize or force a regional model. The problem is especially consequential for fields that should vary smoothly at the regional scale. Bathymetry is the sharpest illustration because it sets the \ROMS sigma-coordinate geometry: an imprint in the transferred depth field perturbs the vertical grid itself, not only the horizontal representation, so the artifact propagates into every subsequent column operation.
+These discontinuities are not physical gradients. They are introduced solely by the transfer operator and can inject grid-scale noise or adjustment features aligned with the \MPAS mesh when the field is used to initialize or force a regional model. The problem is especially consequential for fields that should vary smoothly at the regional scale. Bathymetry is the sharpest illustration because it sets the \ROMS sigma-coordinate geometry. An imprint in the transferred depth field perturbs the vertical grid itself, not only the horizontal representation, so the artifact propagates into every subsequent column operation.
 
-The normalized bilinear map removes the leading-order imprint by interpolating continuously across the \MPAS mesh rather than assigning constant cell averages, at the cost of exact global conservation. For bathymetry, SSH and initial-condition forcing, we can regard this as an acceptable compromise to avoid imprinting effects, since \ROMS evolves its tracer components with its own conservative transport scheme, whereas mesh-imprinted forcing introduces artificial gradients that can persist in the interior solution. However, when the transferred solution must be conservative during the downscaling operation, the bilinear map can be followed by a rescaling operation (post-processing step) of the transferred field against the \MPAS fields defined on the shared support. This restores global integrals at the cost of losing exact monotonicity in high-gradient regions~\citep{mahadevan2022mira}.
+The normalized bilinear remap removes the leading-order imprint by interpolating continuously across the \MPAS mesh rather than assigning constant cell averages. Equation~\eqref{eq:bilin-global-normalization} preserves the integral over the shared domain without enforcing conservation in each cell. This trade is appropriate for bathymetry, SSH, and initial-condition forcing because \ROMS evolves its tracer components with its own conservative transport scheme, whereas mesh-imprinted forcing introduces artificial gradients that can persist in the interior solution. The domain-wide correction can modify local bounds in regions with strong gradients~\citep{mahadevan2022mira}.
 
 
 \begin{figure}[htbp]
@@ -202,31 +235,125 @@ The normalized bilinear map removes the leading-order imprint by interpolating c
 	\end{subfigure}\hfill
 	\begin{subfigure}{0.35\textwidth}
 		\includegraphics[width=\textwidth]{Figures/conv_bathy_bilinear.png}
-		\caption{Bilinear projection.}
+		\caption{Normalized bilinear projection.}
 		\label{conv:fig:bilinear-remap}
 	\end{subfigure}
 	\caption{Mesh imprinting in the North Atlantic domain.}
 	\label{fig:mesh-imprinting}
 \end{figure}
 
-Higher-order quasi-interpolants offer a third route. Multilevel B-spline approximation (MBA) builds a smooth field from a hierarchy of control lattices~\citep{lee1997mba}, while Generalized Moving Least-Squares and Weighted Essentially Non-Oscillatory reconstructions instead fit local stencils, the latter with nonlinear weights that suppress oscillations near discontinuities~\citep{mahadevan2022mira}. Each would need a normalization step to recover conservation, and limiters to recover monotonicity. We have not pursued these extensions in the current study.
+Higher-order quasi-interpolants offer a third route. Multilevel B-spline approximation (MBA) builds a smooth field from a hierarchy of control lattices~\citep{lee1997mba}, while Generalized Moving Least-Squares and Weighted Essentially Non-Oscillatory reconstructions instead fit local stencils, or nonlinear weights that can suppress oscillations near discontinuities~\citep{mahadevan2022mira}. Each of these different quasi-interpolants in general would need a normalization step to recover conservation, and limiters to recover monotonicity. We have not pursued these extensions in the current study.
 
 \subsection{Vertical remap of each column}\label{sec:vertical}
 
-Each intermediate column is assigned physical \MPAS depths taken from the nearest \MPAS column, and is then remapped onto the local \ROMS depths, where the terrain-following depths follow from the \ROMS bathymetry and free-surface ocean elevation (SSH). The three-dimensional transfer uses the conservative axial projection: the property preserved in the vertical direction is the integral of the reconstructed profile over each \ROMS layer, which for the piecewise-average degrees of freedom originating from finite-volume solvers amounts to a remap of \MPAS layer averages. A monotone piecewise cubic-Hermite interpolant (PCHIP) is also available as a point-value projection, and the two are compared in \S\ref{conv:sec:axial-refinement}, and because it reproduces the profile rather than its layer integrals, it reaches higher order on smooth data but does not conserve, which is why the conservative projection is the one used for the transfers reported here.
+For each \ROMS column $i$, let $j(i)$ denote the \MPAS column selected
+by the nearest-column geometry rule. Its physical interfaces define the
+\MPAS intervals
+\begin{equation}
+ I^M_{i,k}=[z^M_{j(i),k-1/2},z^M_{j(i),k+1/2}],
+ \qquad
+ I^R_{i,\ell}=[z^R_{i,\ell-1/2},z^R_{i,\ell+1/2}],
+ \label{eq:vertical-intervals}
+\end{equation}
+where interval lengths are independent of the sign convention for depth.
+Assigning one \MPAS column geometry to $\Xi_{i,:}$ is an approximation.
+The values in that intermediate column combine the horizontal stencil
+through $W$, whereas the physical layer interfaces come from $j(i)$. The
+\ROMS interfaces follow from the local \ROMS bathymetry and free-surface
+elevation.
 
-Two situations require the column to be extended beyond the range \MPAS actually resolves. Supplying a full level slab requires values below the deepest wet \MPAS level, where \MPAS masks its axial layers, and these are held at the deepest wet value, equivalent to nearest-neighbor extrapolation, and the extended tail is discarded once the column is restricted to its physical depth range. Where the \ROMS column extends beyond the \MPAS range, the profile is likewise held at the nearest endpoint rather than extrapolated. Both rules apply to tracers, while velocities are instead set to zero outside the \MPAS range, imposing a no-flow condition. These choices matter most where bathymetry varies sharply, and we return to their consequences in \S\ref{conv:sec:bathysmooth}.
+The production vertical operator treats $\Xi_{i,k}$ as the average of a
+piecewise-constant reconstruction over $I^M_{i,k}$. Define the overlap
+length and \ROMS layer thickness by
+\begin{equation}
+ d_{i,\ell k}=|I^R_{i,\ell}\cap I^M_{i,k}|,
+ \qquad \Delta z^R_{i,\ell}=|I^R_{i,\ell}|.
+ \label{eq:vertical-overlap}
+\end{equation}
+On common vertical support, the entries of the column map in
+Eq.~\eqref{conv:eq:tensor} are
+\begin{equation}
+ V^{(i)}_{\ell k}=\frac{d_{i,\ell k}}{\Delta z^R_{i,\ell}},
+ \qquad
+ \Psi_{i,\ell}=\frac{1}{\Delta z^R_{i,\ell}}
+   \sum_{k=1}^{K_M}d_{i,\ell k}\Xi_{i,k}.
+ \label{eq:vertical-map}
+\end{equation}
+Thus each \ROMS layer integral is constructed from the overlapping
+\MPAS layer contributions,
+\begin{equation}
+ \Delta z^R_{i,\ell}\Psi_{i,\ell}
+ =\sum_{k=1}^{K_M}d_{i,\ell k}\Xi_{i,k}.
+ \label{eq:vertical-conservation}
+\end{equation}
+Summing Eq.~\eqref{eq:vertical-conservation} over $\ell$ preserves the
+column integral of the piecewise-constant \MPAS representation when the
+\MPAS and \ROMS intervals cover the same physical space. The horizontal
+normalization separately preserves the area-weighted integral over the
+shared horizontal domain. It does not, however, impose conservation within each
+cell locally. These properties do not by themselves establish
+conservation of the volume-integral in the complete three-dimensional transfer
+when physical layer thickness varies horizontally. The construction is the
+first-order finite-volume form
+of conservative remapping between generalized vertical coordinates
+\citep{white2009highorder}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=1.0cm,y=0.72cm,font=\small]
+  \fill[gray!8] (0,0) rectangle (8,5.8);
+  \draw[thick] (0,0) rectangle (8,5.8);
+  \node[font=\bfseries] at (1.7,6.25) {\MPAS layers};
+  \node[font=\bfseries] at (6.25,6.25) {\ROMS layers};
+
+  \foreach \y in {0,1.35,3.25,4.55,5.8}
+    \draw[blue!75!black,thick] (0.35,\y) -- (3.55,\y);
+  \fill[blue!18] (0.35,1.35) rectangle (3.55,3.25);
+  \fill[blue!30] (0.35,3.25) rectangle (3.55,4.55);
+  \node[blue!70!black] at (1.95,2.3) {$\Xi_{i,k+1}$};
+  \node[blue!70!black] at (1.95,3.9) {$\Xi_{i,k}$};
+
+  \foreach \y in {0,0.8,2.65,4.15,5.8}
+    \draw[red!75!black,thick,dashed] (4.45,\y) -- (7.65,\y);
+  \fill[red!22] (4.45,2.65) rectangle (7.65,4.15);
+  \node[red!70!black] at (6.05,3.4) {$I^R_{i,\ell}$};
+
+  \draw[<->,thick] (3.85,2.65) -- node[left] {$d_{i,\ell,k+1}$} (3.85,3.25);
+  \draw[<->,thick] (3.85,3.25) -- node[left] {$d_{i,\ell k}$} (3.85,4.15);
+  \draw[densely dotted] (3.55,2.65) -- (4.45,2.65);
+  \draw[densely dotted] (3.55,3.25) -- (4.45,3.25);
+  \draw[densely dotted] (3.55,4.15) -- (4.45,4.15);
+
+  \node[align=center] at (4,-0.65)
+    {$\displaystyle \Delta z^R_{i,\ell}\Psi_{i,\ell}
+      =\sum_k d_{i,\ell k}\Xi_{i,k}$ \quad (common support)};
+\end{tikzpicture}
+\caption{Conservative one-dimensional layer-average remap. The highlighted
+\ROMS layer receives the piecewise-constant \MPAS layer averages in
+proportion to their overlap lengths. Endpoint continuation outside the
+common vertical support is handled separately.}
+\label{fig:vertical-overlap-remap}
+\end{figure}
+
+A monotone, piecewise cubic-Hermite interpolant (PCHIP) is evaluated in
+\S\ref{conv:sec:axial-refinement} as a separate quasi-interpolant method. It
+samples an analytic profile at \MPAS interfaces and evaluates the
+interpolant at \ROMS interfaces. It neither consumes nor produces the
+layer-average degrees of freedom in Eq.~\eqref{eq:vertical-map}. It can
+converge faster for smooth profiles but does not satisfy the layer-integral
+identity in Eq.~\eqref{eq:vertical-conservation}, which is why the
+conservative layer-average map is used for the three-dimensional transfers
+reported here.
+
+We want to emphasize that while most regions of the embedded nesting is consistent, two situations require the column to be extended beyond the range \MPAS actually resolves. Supplying a full level slab requires values below the deepest wet \MPAS layer, where \MPAS masks its vertical layers. These values are held at the deepest wet value, equivalent to nearest-neighbor continuation.%, and the artificial tail is discarded when the column is restricted to its physical depth range. 
+Where a \ROMS column extends beyond the physical \MPAS column height, tracer values are likewise held at the nearest endpoint, while velocities are set to zero to impose a no-flow condition. Integrals over these extended \ROMS regions include the prescribed continuation and are therefore not part of the conservation identity in Eq.~\eqref{eq:vertical-conservation}. These choices matter more specifically where bathymetry varies sharply, and we return to their consequences in \S\ref{conv:sec:bathysmooth}.
 
 
 %We should emphasize that these are properties of the two component operators. Neither individually, nor in combination, do they guarantee that the composed three-dimensional transfer conserves volume-integrated quantities or preserves bounds.
 
-It is noted that the zonal and meridional velocities are transferred component-wise as scalar, Earth-relative fields at horizontal cell centers. No rotation to the curvilinear basis, interpolation to polygonal edges, or discrete divergence constraints are imposed in this transfer. The velocity diagnostics presented in this manuscript measure componentwise transport in a fixed basis. Use of consistent mimetic schemes to dynamically transfer vector fields remains outside the present scope of the paper and will be pursued in future work.
+It is noted that the zonal and meridional velocities are transferred component-wise as scalar, Earth-relative fields at horizontal cell centers. No rotations to the curvilinear basis, interpolations to polygonal edges, or discrete divergence constraints are imposed during this transfer. The velocity diagnostics presented here measure componentwise transport in a fixed basis. Alternatively, the use of consistent mimetic schemes to dynamically transfer vector fields from \MPAS cell edges directly to \ROMS cell edges in a conservative manner remains outside the present scope of the paper and will be pursued in the future to directly replace the three-level remap worfflow: \MPAS cell edge to center, \MPAS cell center to \ROMS cell center and \ROMS cell center to cell edges.
 
-\subsection{Regional domains and metrics}\label{conv:sec:regional-methods}
-
-
-\TODOc{Kyle: Need to add more details about the metrics that we care about in regional domains. Provide details about nudging, and how \ROMS utilizes the time-dependent forcing conditions to get a consistent view of the global solution}
+%\subsection{Regional domains and metrics}\label{conv:sec:regional-methods}
 
 
-The solution verification uses the Gulf Stream and Bay of Bengal domains, while regional application validation also include the North Atlantic and Chesapeake Bay. All regional domains employ a nudging layer of 5 cells (Bay of Bengal has a 10-cell nudging layer) that ensure boundary stability
-The interpretation of regional model results relies on snapshots of surface normalized relative vorticity ($\zeta/f$) and surface kinetic-energy (KE) time series. The snapshots of $\zeta/f$ show points of (in)stability between the boundary layer due to numerical gradients and are plotted at the halfway point (30 days) of the simulation period. Area-weighted surface KE time series are computed equivalently for the remapped and ROMS solutions, and are clipped to the fractional \MPAS cells that lie within the extent of the ROMS grid before also being computed as an area-weighted average.
+%\TODOc{Kyle: Need to add more details about the metrics that we care about in regional domains. Provide details about nudging, and how \ROMS utilizes the time-dependent forcing conditions to get a consistent view of the global solution}
